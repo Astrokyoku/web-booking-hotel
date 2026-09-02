@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS rooms (
     room_number     VARCHAR(10) NOT NULL UNIQUE,
     floor           INTEGER NOT NULL CHECK (floor > 0),
     status          VARCHAR(20) NOT NULL DEFAULT 'available'
-                    CHECK (status IN ('available', 'maintenance')),
+                    CHECK (status IN ('available', 'occupied', 'maintenance', 'cleaning')),
     created_at      TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

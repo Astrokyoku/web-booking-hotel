@@ -75,4 +75,18 @@ router.put('/guests/:id/blacklist', adminController.blacklistGuest);
  */
 router.put('/guests/:id/reset-password', adminController.resetGuestPassword);
 
+/**
+ * @route   GET /api/v1/admin/restaurant-bookings
+ * @desc    Mengambil data reservasi restoran
+ * @access  Private (Admin Only)
+ */
+router.get('/restaurant-bookings', adminController.getAllRestaurantBookings);
+
+/**
+ * @route   PUT /api/v1/admin/restaurant-bookings/:id/status
+ * @desc    Mengubah status reservasi restoran
+ * @access  Private (Admin Only)
+ */
+router.put('/restaurant-bookings/:id/status', adminController.updateRestaurantBookingStatus);
+
 module.exports = router;

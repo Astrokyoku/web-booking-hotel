@@ -15,11 +15,12 @@ const getDashboardStats = async (req, res) => {
     // 1. Total Revenue (Total Pendapatan dari transaksi yang 'paid')
     const revenueResult = await query(`
       SELECT 
-        COALESCE(SUM(amount), 0) AS total_revenue,
-        COALESCE(SUM(CASE WHEN paid_at >= CURRENT_DATE - INTERVAL '30 days' THEN amount ELSE 0 END), 0) AS monthly_revenue,
-        COALESCE(SUM(CASE WHEN paid_at >= CURRENT_DATE THEN amount ELSE 0 END), 0) AS today_revenue
-      FROM payments 
-      WHERE status = 'paid'
+        COALESCE(SUM(p.amount), 0) AS total_revenue,
+        COALESCE(SUM(CASE WHEN p.paid_at >= CURRENT_DATE - INTERVAL '30 days' THEN p.amount ELSE 0 END), 0) AS monthly_revenue,
+        COALESCE(SUM(CASE WHEN p.paid_at >= CURRENT_DATE THEN p.amount ELSE 0 END), 0) AS today_revenue
+      FROM payments p
+      JOIN bookings b ON p.booking_id = b.id
+      WHERE p.status = 'paid' AND b.status != 'cancelled'
     `);
 
     // 2. Statistik Reservasi
@@ -579,6 +580,79 @@ const resetGuestPassword = async (req, res) => {
   }
 };
 
+/**
+ * 10. GET /api/v1/admin/restaurant-bookings
+ * Mengambil semua data reservasi restoran
+ */
+const getAllRestaurantBookings = async (req, res) => {
+  try {
+    const result = await query(`
+      SELECT 
+        tr.id,
+        tr.reservation_code,
+        u.full_name AS guest_name,
+        u.email AS guest_email,
+        u.phone AS guest_phone,
+        tr.reservation_date,
+        tr.session_time,
+        tr.guest_count,
+        tr.table_number,
+        tr.special_requests,
+        tr.status,
+        tr.created_at
+      FROM table_reservations tr
+      JOIN users u ON tr.user_id = u.id
+      ORDER BY tr.reservation_date DESC, tr.created_at DESC
+    `);
+
+    return res.status(200).json({
+      status: 'SUCCESS',
+      message: 'Data reservasi restoran berhasil diambil.',
+      data: result.rows,
+    });
+  } catch (error) {
+    console.error('❌ Admin getAllRestaurantBookings Error:', error.message);
+    return res.status(500).json({ status: 'ERROR', message: 'Gagal mengambil data reservasi restoran.' });
+  }
+};
+
+/**
+ * 11. PUT /api/v1/admin/restaurant-bookings/:id/status
+ * Mengubah status reservasi restoran
+ */
+const updateRestaurantBookingStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, table_number } = req.body;
+
+    const validStatuses = ['pending', 'confirmed', 'completed', 'cancelled'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ status: 'ERROR', message: 'Status reservasi tidak valid.' });
+    }
+
+    const updateQuery = `
+      UPDATE table_reservations 
+      SET status = $1, table_number = COALESCE($2, table_number), updated_at = CURRENT_TIMESTAMP
+      WHERE id = $3 
+      RETURNING *
+    `;
+    const result = await query(updateQuery, [status, table_number || null, id]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ status: 'ERROR', message: 'Reservasi tidak ditemukan.' });
+    }
+
+    return res.status(200).json({
+      status: 'SUCCESS',
+      message: `Status reservasi berhasil diubah menjadi ${status}.`,
+      data: result.rows[0],
+    });
+  } catch (error) {
+    console.error('❌ Admin updateRestaurantBookingStatus Error:', error.message);
+    return res.status(500).json({ status: 'ERROR', message: 'Gagal memperbarui status reservasi restoran.' });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getAllBookings,
@@ -589,4 +663,6 @@ module.exports = {
   getAllGuests,
   blacklistGuest,
   resetGuestPassword,
+  getAllRestaurantBookings,
+  updateRestaurantBookingStatus,
 };

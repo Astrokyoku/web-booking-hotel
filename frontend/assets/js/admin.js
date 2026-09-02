@@ -150,6 +150,7 @@ function switchAdminTab(tabId) {
   const titles = {
     dashboard: { title: 'Dashboard & Analitik', sub: 'Pantau performa reservasi, okupansi kamar, dan revenue hotel secara real-time.' },
     bookings: { title: 'Manajemen Reservasi', sub: 'Kelola status tamu (Check-in, Check-out, Konfirmasi, Pembatalan) secara real-time.' },
+    restaurant_bookings: { title: 'Reservasi Restoran', sub: 'Kelola pemesanan meja dan status kedatangan tamu di restoran.' },
     rooms: { title: 'Inventori Kamar', sub: 'Pantau ketersediaan kamar, kamar terisi, dan atur status pemeliharaan (maintenance).' },
     guests: { title: 'Direktori Tamu', sub: 'Daftar seluruh tamu yang memiliki akun di LUXURY Hotel & Resort.' },
   };
@@ -162,6 +163,7 @@ function switchAdminTab(tabId) {
   // Fetch data sesuai tab
   if (tabId === 'dashboard') loadDashboardStats();
   else if (tabId === 'bookings') loadBookings();
+  else if (tabId === 'restaurant_bookings') loadRestaurantBookings();
   else if (tabId === 'rooms') loadRooms();
   else if (tabId === 'guests') loadGuests();
 }
@@ -557,7 +559,7 @@ async function handleAddRoomSubmit(e) {
 // ============================================================
 async function loadGuests() {
   const tbody = document.getElementById('guestsTableBody');
-  tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px;"><i class="fa-solid fa-spinner fa-spin text-gold"></i> Memuat data tamu...</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px;"><i class="fa-solid fa-spinner fa-spin text-gold"></i> Memuat data tamu...</td></tr>`;
 
   try {
     const res = await fetch(`${API_BASE}/admin/guests`, {
@@ -570,7 +572,7 @@ async function loadGuests() {
     const guests = data.data.guests;
 
     if (guests.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--text-secondary);">Belum ada tamu terdaftar.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-secondary);">Belum ada tamu terdaftar.</td></tr>`;
       return;
     }
 
@@ -588,76 +590,10 @@ async function loadGuests() {
           <td><span style="font-weight: 700; color: var(--gold-light);">${g.total_bookings}</span> Reservasi</td>
           <td><strong style="color: var(--gold-primary);">Rp ${Number(g.total_spent).toLocaleString('id-ID')}</strong></td>
           <td style="color: var(--text-muted);">${regDate}</td>
-          <td>
-            ${g.status === 'blacklisted' 
-              ? `<span style="background: rgba(255,59,48,0.15); color: #ff3b30; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600;"><i class="fa-solid fa-ban"></i> Blacklisted</span>` 
-              : `<span style="background: rgba(52,199,89,0.15); color: #34c759; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600;"><i class="fa-solid fa-check-circle"></i> Active</span>`
-            }
-          </td>
-          <td>
-            <div style="display: flex; gap: 8px;">
-              <button class="btn ${g.status === 'blacklisted' ? 'btn-outline-gold' : 'btn-outline-rose'} btn-sm" onclick="handleBlacklist('${g.id}', '${g.status}')">
-                <i class="fa-solid ${g.status === 'blacklisted' ? 'fa-unlock' : 'fa-lock'}"></i> ${g.status === 'blacklisted' ? 'Aktifkan' : 'Blacklist'}
-              </button>
-              <button class="btn btn-outline-gold btn-sm" onclick="handleResetPassword('${g.id}')">
-                <i class="fa-solid fa-key"></i> Reset
-              </button>
-            </div>
-          </td>
         </tr>
       `;
     }).join('');
 
-  } catch (err) {
-    showToast(err.message, 'error');
-  }
-}
-
-// ============================================================
-// 7. GUEST ACTIONS
-// ============================================================
-async function handleBlacklist(guestId, currentStatus) {
-  const action = currentStatus === 'blacklisted' ? 'activate' : 'blacklist';
-  const confirmMsg = action === 'blacklist' 
-    ? 'Apakah Anda yakin ingin mem-blacklist tamu ini? Mereka tidak akan bisa login lagi.'
-    : 'Apakah Anda yakin ingin mengaktifkan kembali akun tamu ini?';
-
-  if (!confirm(confirmMsg)) return;
-
-  try {
-    const res = await fetch(`${API_BASE}/admin/guests/${guestId}/blacklist`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${adminState.token}`
-      },
-      body: JSON.stringify({ action })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message);
-
-    showToast(data.message, 'success');
-    loadGuests(); // Reload tabel tamu
-  } catch (err) {
-    showToast(err.message, 'error');
-  }
-}
-
-async function handleResetPassword(guestId) {
-  if (!confirm('Apakah Anda yakin ingin me-reset password tamu ini menjadi "password123"?')) return;
-
-  try {
-    const res = await fetch(`${API_BASE}/admin/guests/${guestId}/reset-password`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${adminState.token}`
-      }
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message);
-
-    showToast(data.message, 'success');
   } catch (err) {
     showToast(err.message, 'error');
   }
@@ -697,4 +633,149 @@ function showToast(message, type = 'success') {
     toast.style.transition = 'all 0.3s ease';
     setTimeout(() => toast.remove(), 300);
   }, 4000);
+}
+
+// ============================================================
+// 8. RESTAURANT BOOKINGS
+// ============================================================
+let allRestaurantBookings = [];
+
+async function loadRestaurantBookings() {
+  const tbody = document.getElementById('restaurantBookingsTableBody');
+  if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px;"><i class="fa-solid fa-spinner fa-spin text-gold"></i> Memuat data reservasi restoran...</td></tr>`;
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/restaurant-bookings`, {
+      headers: { 'Authorization': `Bearer ${adminState.token}` },
+    });
+    
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+    
+    allRestaurantBookings = data.data;
+    renderRestaurantBookingsTable();
+  } catch (err) {
+    if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px; color: var(--accent-rose);">${err.message}</td></tr>`;
+    showToast('Gagal memuat reservasi restoran', 'error');
+  }
+}
+
+function renderRestaurantBookingsTable() {
+  const tbody = document.getElementById('restaurantBookingsTableBody');
+  const filter = document.getElementById('restaurantBookingStatusFilter') ? document.getElementById('restaurantBookingStatusFilter').value : 'all';
+  
+  if (!tbody) return;
+  
+  let filtered = allRestaurantBookings;
+  if (filter !== 'all') {
+    filtered = filtered.filter(b => b.status === filter);
+  }
+  
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px; color: var(--text-secondary);">Tidak ada reservasi ditemukan.</td></tr>';
+    return;
+  }
+  
+  const statusColors = {
+    'pending': 'var(--accent-amber)',
+    'confirmed': 'var(--accent-emerald)',
+    'completed': 'var(--text-secondary)',
+    'cancelled': 'var(--accent-rose)'
+  };
+  
+  tbody.innerHTML = filtered.map(b => {
+    const statusColor = statusColors[b.status] || 'gray';
+    const dateStr = new Date(b.reservation_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    const sessionLabels = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner' };
+    const sessionStr = sessionLabels[b.session_time] || b.session_time;
+    
+    return `
+      <tr>
+        <td style="font-family: monospace; font-weight: bold; color: var(--gold-light);">${b.reservation_code}</td>
+        <td>
+          <div style="font-weight: 600;">${b.guest_name}</div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary);">${b.guest_email}</div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary);">${b.guest_phone || '-'}</div>
+        </td>
+        <td>
+          <div style="font-weight: 600;">${dateStr}</div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">Sesi: ${sessionStr}</div>
+        </td>
+        <td>${b.guest_count} Orang</td>
+        <td>
+          <input type="text" class="admin-input" style="width: 80px; padding: 4px; text-align: center;" 
+            value="${b.table_number || ''}" id="tableNum-${b.id}" placeholder="Meja">
+        </td>
+        <td style="font-size: 0.85rem; max-width: 150px; white-space: normal;">${b.special_requests || '-'}</td>
+        <td>
+          <select class="select-filter" style="width: 130px; font-weight: bold; color: ${statusColor};" 
+            onchange="updateRestaurantBookingStatus('${b.id}', this.value)">
+            <option value="pending" ${b.status === 'pending' ? 'selected' : ''}>Pending</option>
+            <option value="confirmed" ${b.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+            <option value="completed" ${b.status === 'completed' ? 'selected' : ''}>Completed</option>
+            <option value="cancelled" ${b.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+          </select>
+        </td>
+        <td>
+          <button class="btn btn-outline-gold btn-sm" onclick="saveTableNumber('${b.id}')" title="Simpan Meja">
+            <i class="fa-solid fa-save"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+async function updateRestaurantBookingStatus(id, newStatus) {
+  if (!confirm(`Ubah status reservasi menjadi ${newStatus}?`)) {
+    loadRestaurantBookings(); // reset
+    return;
+  }
+  
+  const tableNum = document.getElementById(`tableNum-${id}`)?.value;
+  
+  try {
+    const res = await fetch(`${API_BASE}/admin/restaurant-bookings/${id}/status`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminState.token}`
+      },
+      body: JSON.stringify({ status: newStatus, table_number: tableNum })
+    });
+    
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+    
+    showToast(data.message, 'success');
+    loadRestaurantBookings();
+  } catch (err) {
+    showToast(err.message, 'error');
+    loadRestaurantBookings();
+  }
+}
+
+async function saveTableNumber(id) {
+  const tableNum = document.getElementById(`tableNum-${id}`).value;
+  const booking = allRestaurantBookings.find(b => b.id === id);
+  if (!booking) return;
+  
+  try {
+    const res = await fetch(`${API_BASE}/admin/restaurant-bookings/${id}/status`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminState.token}`
+      },
+      body: JSON.stringify({ status: booking.status, table_number: tableNum })
+    });
+    
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+    
+    showToast('Nomor meja berhasil disimpan.', 'success');
+    loadRestaurantBookings();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
 }

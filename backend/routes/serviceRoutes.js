@@ -8,6 +8,7 @@ const router = express.Router();
 const {
   getRestaurantMenus,
   bookRestaurantTable,
+  getMyRestaurantBookings,
   getHotelFacilities,
   getVenues,
   bookVenue
@@ -17,6 +18,7 @@ const { authenticate } = require('../middleware/authMiddleware');
 // --- Restoran "Angie" ---
 router.get('/restaurant/menus', getRestaurantMenus);
 router.post('/restaurant/book', authenticate, bookRestaurantTable);
+router.get('/restaurant/my-bookings', authenticate, getMyRestaurantBookings);
 
 // --- Fasilitas Hotel ---
 router.get('/facilities', getHotelFacilities);

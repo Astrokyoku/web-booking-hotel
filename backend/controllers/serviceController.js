@@ -69,6 +69,35 @@ const bookRestaurantTable = async (req, res) => {
   }
 };
 
+/**
+ * 2b. GET /api/v1/services/restaurant/my-bookings
+ * Mengambil riwayat reservasi restoran milik tamu yang login
+ */
+const getMyRestaurantBookings = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const result = await query(`
+      SELECT 
+        tr.id, tr.reservation_code, tr.reservation_date, tr.session_time, 
+        tr.guest_count, tr.table_number, tr.special_requests, tr.status, tr.created_at,
+        u.full_name as guest_name, u.email as guest_email, u.phone as guest_phone
+      FROM table_reservations tr
+      JOIN users u ON tr.user_id = u.id
+      WHERE tr.user_id = $1
+      ORDER BY tr.reservation_date DESC, tr.created_at DESC
+    `, [userId]);
+
+    return res.status(200).json({
+      status: 'SUCCESS',
+      message: 'Berhasil mengambil riwayat reservasi restoran.',
+      data: { bookings: result.rows }
+    });
+  } catch (error) {
+    console.error('❌ Error getMyRestaurantBookings:', error.message);
+    return res.status(500).json({ status: 'ERROR', message: 'Gagal memuat riwayat reservasi restoran' });
+  }
+};
+
 // ============================================================
 // HOTEL FACILITIES
 // ============================================================
@@ -156,6 +185,7 @@ const bookVenue = async (req, res) => {
 module.exports = {
   getRestaurantMenus,
   bookRestaurantTable,
+  getMyRestaurantBookings,
   getHotelFacilities,
   getVenues,
   bookVenue

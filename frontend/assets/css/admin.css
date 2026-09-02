@@ -205,6 +205,7 @@ body {
    ============================================================ */
 .admin-main {
   flex: 1;
+  min-width: 0; /* Fixes flexbox blowout */
   margin-left: 280px;
   padding: 24px 32px 60px;
   min-height: 100vh;
@@ -787,8 +788,48 @@ body {
   to { transform: translateX(0); opacity: 1; }
 }
 
-/* Responsive Breakpoints */
-@media (max-width: 992px) {
+/* ============================================================
+   9. RESPONSIVE & MOBILE LAYOUT
+   ============================================================ */
+
+/* Wrapper & Toggle Button */
+.topbar-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mobile-toggle-btn {
+  display: none;
+  background: var(--gold-gradient);
+  border: none;
+  color: #070a12;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  font-size: 1.2rem;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 90;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.sidebar-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+@media (max-width: 1024px) {
   .admin-sidebar {
     transform: translateX(-100%);
   }
@@ -798,5 +839,72 @@ body {
   .admin-main {
     margin-left: 0;
     padding: 16px;
+  }
+  .mobile-toggle-btn {
+    display: flex;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-topbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding: 16px;
+  }
+  
+  .topbar-actions {
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rooms-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .table-filter-bar {
+    width: 100%;
+  }
+
+  .search-input-box {
+    width: 100%;
+  }
+  
+  .search-input-box input {
+    width: 100%;
+  }
+  
+  .select-filter {
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar-title h1 {
+    font-size: 1.3rem;
+  }
+  
+  .topbar-title p {
+    font-size: 0.75rem;
+  }
+
+  .topbar-actions .btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  #currentClockDisplay {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 8px;
   }
 }

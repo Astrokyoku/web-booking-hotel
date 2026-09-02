@@ -796,16 +796,26 @@ async function openMyBookingsModal() {
   openModal('myBookingsModal');
 
   try {
-    const res = await fetch(`${API_BASE}/bookings/my-bookings`, {
+    const resRooms = await fetch(`${API_BASE}/bookings/my-bookings`, {
+      headers: { 'Authorization': `Bearer ${state.token}` },
+    });
+    const resRest = await fetch(`${API_BASE}/services/restaurant/my-bookings`, {
       headers: { 'Authorization': `Bearer ${state.token}` },
     });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message);
+    let roomBookings = [];
+    let restBookings = [];
 
-    const bookings = data.data.bookings;
+    if (resRooms.ok) {
+      const dataRooms = await resRooms.json();
+      roomBookings = dataRooms.data.bookings || [];
+    }
+    if (resRest.ok) {
+      const dataRest = await resRest.json();
+      restBookings = dataRest.data.bookings || [];
+    }
 
-    if (bookings.length === 0) {
+    if (roomBookings.length === 0 && restBookings.length === 0) {
       listContainer.innerHTML = `
         <div style="text-align: center; padding: 40px;">
           <i class="fa-solid fa-calendar-xmark text-gold" style="font-size: 2.5rem; margin-bottom: 12px;"></i>
@@ -815,7 +825,12 @@ async function openMyBookingsModal() {
       return;
     }
 
-    listContainer.innerHTML = bookings.map(b => {
+    let html = '';
+
+    // Render Kamar
+    if (roomBookings.length > 0) {
+      html += `<h4 style="color: var(--gold-light); margin-bottom: 10px; border-bottom: 1px solid var(--gold-border); padding-bottom: 5px;">Reservasi Kamar</h4>`;
+      html += roomBookings.map(b => {
       let badgeClass = 'var(--accent-amber)';
       if (b.booking_status === 'confirmed' || b.booking_status === 'checked_in') badgeClass = 'var(--accent-emerald)';
       if (b.booking_status === 'cancelled') badgeClass = 'var(--accent-rose)';
@@ -858,10 +873,116 @@ async function openMyBookingsModal() {
           </div>
         </div>
       `;
-    }).join('');
+      }).join('');
+    }
+
+    // Render Restoran
+    if (restBookings.length > 0) {
+      html += `<h4 style="color: var(--gold-light); margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid var(--gold-border); padding-bottom: 5px;">Reservasi Restoran</h4>`;
+      html += restBookings.map(b => {
+        let badgeClass = 'var(--accent-amber)';
+        if (b.status === 'confirmed') badgeClass = 'var(--accent-emerald)';
+        if (b.status === 'completed') badgeClass = 'var(--text-secondary)';
+        if (b.status === 'cancelled') badgeClass = 'var(--accent-rose)';
+
+        const dateStr = new Date(b.reservation_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        
+        return `
+          <div style="background: var(--bg-surface-elevated); border: 1px solid var(--gold-border); border-radius: var(--radius-sm); padding: 18px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; color: var(--gold-light); font-size: 1.05rem;">${b.reservation_code}</span>
+              <span style="font-size: 0.75rem; font-weight: 700; color: #fff; background: ${badgeClass}; padding: 2px 10px; border-radius: 12px; text-transform: uppercase;">
+                ${b.status}
+              </span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.85rem; color: var(--text-secondary);">
+              <div><strong>Tanggal:</strong> ${dateStr}</div>
+              <div><strong>Sesi:</strong> <span style="text-transform: capitalize;">${b.session_time}</span></div>
+              <div><strong>Tamu:</strong> ${b.guest_count} Orang</div>
+              <div><strong>Meja:</strong> ${b.table_number || 'Belum Ditentukan'}</div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 6px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08);">
+              <button class="btn btn-outline-gold btn-sm" onclick='openRestaurantVoucher(${JSON.stringify(b)})'>
+                <i class="fa-solid fa-file-invoice"></i> Bukti Reservasi
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    listContainer.innerHTML = html;
+
   } catch (err) {
-    listContainer.innerHTML = `<p style="color: var(--accent-rose); text-align: center;">${err.message}</p>`;
+    listContainer.innerHTML = `<div style="text-align: center; color: var(--accent-rose); padding: 20px;">${err.message}</div>`;
   }
+}
+
+/**
+ * Membuka Modal Bukti Reservasi Restoran
+ */
+function openRestaurantVoucher(b) {
+  const printArea = document.getElementById('restVoucherPrintArea');
+  const dateStr = new Date(b.reservation_date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  
+  let statusBadge = '';
+  if (b.status === 'confirmed') statusBadge = '<span style="color: green; font-weight: bold;">CONFIRMED</span>';
+  else if (b.status === 'pending') statusBadge = '<span style="color: orange; font-weight: bold;">PENDING</span>';
+  else if (b.status === 'completed') statusBadge = '<span style="color: gray; font-weight: bold;">COMPLETED</span>';
+  else statusBadge = `<span style="color: red; font-weight: bold;">${b.status.toUpperCase()}</span>`;
+
+  printArea.innerHTML = `
+    <div style="text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 20px; margin-bottom: 20px;">
+      <h2 style="margin: 0; font-family: serif; color: #c5a059;">LUXURY HOTEL & RESORT</h2>
+      <p style="margin: 5px 0 0; color: #666; font-size: 0.9rem;">Restoran "Angie" - Bukti Reservasi</p>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+      <div>
+        <p style="margin: 0; font-size: 0.85rem; color: #666;">Kode Booking</p>
+        <h3 style="margin: 0; font-family: monospace; font-size: 1.2rem;">${b.reservation_code}</h3>
+      </div>
+      <div style="text-align: right;">
+        <p style="margin: 0; font-size: 0.85rem; color: #666;">Status</p>
+        <h3 style="margin: 0;">${statusBadge}</h3>
+      </div>
+    </div>
+    
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+      <tr>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>Nama Tamu</strong></td>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right;">${b.guest_name || state.user?.full_name || '-'}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>Tanggal</strong></td>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right;">${dateStr}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>Sesi Waktu</strong></td>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right; text-transform: capitalize;">${b.session_time}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>Jumlah Tamu</strong></td>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right;">${b.guest_count} Orang</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>No Meja</strong></td>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right;">${b.table_number || 'Belum Ditentukan (Walk-in)'}</td>
+      </tr>
+    </table>
+    
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+      <p style="margin: 0; font-size: 0.85rem; font-weight: bold;">Permintaan Khusus:</p>
+      <p style="margin: 5px 0 0; font-size: 0.85rem; color: #555;">${b.special_requests || '-'}</p>
+    </div>
+    
+    <div style="text-align: center; margin-top: 30px; font-size: 0.8rem; color: #888;">
+      Harap tunjukkan Bukti Reservasi ini kepada resepsionis restoran saat kedatangan.
+    </div>
+  `;
+  openModal('restaurantVoucherModal');
 }
 
 // ============================================================

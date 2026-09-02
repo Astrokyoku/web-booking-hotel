@@ -12,12 +12,15 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <!-- Admin Stylesheet -->
-  <link rel="stylesheet" href="assets/css/admin.css">
+  <link rel="stylesheet" href="assets/css/admin.css?v=2">
 </head>
 <body>
 
   <!-- Toast Notification Container -->
   <div id="toastContainer"></div>
+
+  <!-- Mobile Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
   <!-- ============================================================
        1. SIDEBAR NAVIGATION
@@ -42,6 +45,10 @@
       <li class="sidebar-item" onclick="switchAdminTab('bookings')" id="menu-bookings">
         <i class="fa-solid fa-calendar-check"></i>
         <span>Manajemen Reservasi</span>
+      </li>
+      <li class="sidebar-item" onclick="switchAdminTab('restaurant_bookings')" id="menu-restaurant_bookings">
+        <i class="fa-solid fa-utensils"></i>
+        <span>Reservasi Restoran</span>
       </li>
       <li class="sidebar-item" onclick="switchAdminTab('rooms')" id="menu-rooms">
         <i class="fa-solid fa-bed"></i>
@@ -80,9 +87,14 @@
     
     <!-- Topbar Header -->
     <header class="admin-topbar">
-      <div class="topbar-title">
+      <div class="topbar-title-wrapper">
+        <button class="mobile-toggle-btn" onclick="toggleSidebar()">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="topbar-title">
         <h1 id="topbarHeaderTitle">Dashboard & Analitik</h1>
         <p id="topbarSubTitle">Pantau performa reservasi, okupansi kamar, dan revenue hotel secara real-time.</p>
+      </div>
       </div>
 
       <div class="topbar-actions">
@@ -225,6 +237,54 @@
               <tr>
                 <td colspan="8" style="text-align: center; padding: 30px;">
                   <i class="fa-solid fa-spinner fa-spin text-gold"></i> Memuat data reservasi...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         TAB 2.5: MANAJEMEN RESERVASI RESTORAN
+         ============================================================ -->
+    <section class="tab-pane" id="pane-restaurant_bookings">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div>
+            <h3 class="admin-card-title">Daftar Reservasi Restoran Angie</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">Kelola status meja dan kedatangan tamu di restoran.</p>
+          </div>
+
+          <div class="table-filter-bar">
+            <select class="select-filter" id="restaurantBookingStatusFilter" onchange="loadRestaurantBookings()">
+              <option value="all">Semua Status</option>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Kode</th>
+                <th>Tamu & Kontak</th>
+                <th>Tanggal & Sesi</th>
+                <th>Jumlah Tamu</th>
+                <th>No Meja</th>
+                <th>Permintaan Khusus</th>
+                <th>Status Booking</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="restaurantBookingsTableBody">
+              <tr>
+                <td colspan="8" style="text-align: center; padding: 30px;">
+                  <i class="fa-solid fa-spinner fa-spin text-gold"></i> Memuat data reservasi restoran...
                 </td>
               </tr>
             </tbody>
@@ -380,6 +440,6 @@
   </div>
 
   <!-- JavaScript Admin Controller -->
-  <script src="assets/js/admin.js"></script>
+  <script src="assets/js/admin.js?v=2"></script>
 </body>
 </html>
