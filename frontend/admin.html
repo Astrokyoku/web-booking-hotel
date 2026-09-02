@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LUXURY Hotel & Resort - Admin Management Portal</title>
+
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Admin Stylesheet -->
+  <link rel="stylesheet" href="assets/css/admin.css">
+</head>
+<body>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer"></div>
+
+  <!-- ============================================================
+       1. SIDEBAR NAVIGATION
+       ============================================================ -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo-icon">
+        <i class="fa-solid fa-crown"></i>
+      </div>
+      <div class="sidebar-brand">
+        <h2>LUXURY</h2>
+        <span>ADMIN PORTAL</span>
+      </div>
+    </div>
+
+    <ul class="sidebar-menu">
+      <div class="menu-category-title">Utama</div>
+      <li class="sidebar-item active" onclick="switchAdminTab('dashboard')" id="menu-dashboard">
+        <i class="fa-solid fa-chart-pie"></i>
+        <span>Dashboard & Analitik</span>
+      </li>
+      <li class="sidebar-item" onclick="switchAdminTab('bookings')" id="menu-bookings">
+        <i class="fa-solid fa-calendar-check"></i>
+        <span>Manajemen Reservasi</span>
+      </li>
+      <li class="sidebar-item" onclick="switchAdminTab('rooms')" id="menu-rooms">
+        <i class="fa-solid fa-bed"></i>
+        <span>Inventori Kamar</span>
+      </li>
+      <li class="sidebar-item" onclick="switchAdminTab('guests')" id="menu-guests">
+        <i class="fa-solid fa-users"></i>
+        <span>Direktori Tamu</span>
+      </li>
+
+      <div class="menu-category-title" style="margin-top: 10px;">Navigasi Publik</div>
+      <a href="index.html" class="sidebar-item" target="_blank">
+        <i class="fa-solid fa-globe"></i>
+        <span>Website Publik Tamu</span>
+      </a>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div class="admin-profile-mini">
+        <div class="admin-avatar" id="adminAvatarInitials">AD</div>
+        <div>
+          <div class="admin-name" id="adminDisplayName">Administrator</div>
+          <div class="admin-role-badge" id="adminRoleName">HOTEL STAFF</div>
+        </div>
+      </div>
+      <button class="btn btn-glass btn-sm" onclick="handleAdminLogout()" title="Keluar dari Admin">
+        <i class="fa-solid fa-right-from-bracket text-gold"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ============================================================
+       2. MAIN CONTENT AREA
+       ============================================================ -->
+  <main class="admin-main">
+    
+    <!-- Topbar Header -->
+    <header class="admin-topbar">
+      <div class="topbar-title">
+        <h1 id="topbarHeaderTitle">Dashboard & Analitik</h1>
+        <p id="topbarSubTitle">Pantau performa reservasi, okupansi kamar, dan revenue hotel secara real-time.</p>
+      </div>
+
+      <div class="topbar-actions">
+        <span style="font-size: 0.85rem; color: var(--gold-light); font-weight: 600; background: rgba(0,0,0,0.3); padding: 8px 14px; border-radius: var(--radius-sm); border: 1px solid var(--gold-border);" id="currentClockDisplay">
+          <i class="fa-regular fa-clock"></i> Memuat waktu...
+        </span>
+        <button class="btn btn-outline-gold btn-sm" onclick="refreshCurrentTab()" title="Muat Ulang Data">
+          <i class="fa-solid fa-rotate"></i> Refresh
+        </button>
+        <a href="index.html" class="btn btn-gold btn-sm">
+          <i class="fa-solid fa-hotel"></i> Tampilan Tamu
+        </a>
+      </div>
+    </header>
+
+    <!-- ============================================================
+         TAB 1: DASHBOARD & ANALITIK
+         ============================================================ -->
+    <section class="tab-pane active" id="pane-dashboard">
+      <!-- KPI Metric Cards Grid -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon"><i class="fa-solid fa-coins"></i></div>
+          <div class="kpi-details">
+            <div class="kpi-label">Total Revenue</div>
+            <div class="kpi-value" id="kpiTotalRevenue">Rp 0</div>
+            <div class="kpi-subtext"><span style="color: var(--accent-emerald);">●</span> Termasuk PPN 12%</div>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon"><i class="fa-solid fa-percent"></i></div>
+          <div class="kpi-details">
+            <div class="kpi-label">Tingkat Okupansi</div>
+            <div class="kpi-value" id="kpiOccupancyRate">0%</div>
+            <div class="kpi-subtext" id="kpiOccupancyRatio">0 dari 0 kamar terisi</div>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon"><i class="fa-solid fa-calendar-days"></i></div>
+          <div class="kpi-details">
+            <div class="kpi-label">Total Reservasi</div>
+            <div class="kpi-value" id="kpiTotalBookings">0</div>
+            <div class="kpi-subtext" id="kpiPendingBookings">0 booking pending</div>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon"><i class="fa-solid fa-door-open"></i></div>
+          <div class="kpi-details">
+            <div class="kpi-label">Check-in Hari Ini</div>
+            <div class="kpi-value" id="kpiTodayCheckins">0</div>
+            <div class="kpi-subtext" id="kpiTodayCheckouts">0 check-out dijadwalkan</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Bookings Table -->
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div>
+            <h3 class="admin-card-title">Aktivitas Reservasi Terkini</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">Daftar 6 transaksi dan pemesanan terbaru tamu.</p>
+          </div>
+          <button class="btn btn-outline-gold btn-sm" onclick="switchAdminTab('bookings')">
+            Lihat Semua Reservasi <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Kode Booking</th>
+                <th>Nama Tamu</th>
+                <th>Tipe Kamar</th>
+                <th>No. Kamar</th>
+                <th>Check-in / Out</th>
+                <th>Total Biaya</th>
+                <th>Status Booking</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="recentBookingsTableBody">
+              <tr>
+                <td colspan="8" style="text-align: center; padding: 30px;">
+                  <i class="fa-solid fa-spinner fa-spin text-gold"></i> Memuat data...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         TAB 2: MANAJEMEN RESERVASI
+         ============================================================ -->
+    <section class="tab-pane" id="pane-bookings">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div>
+            <h3 class="admin-card-title">Daftar Seluruh Reservasi Hotel</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">Kelola status tamu (Check-in, Check-out, Konfirmasi, Pembatalan) secara real-time.</p>
+          </div>
+
+          <div class="table-filter-bar">
+            <div class="search-input-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="bookingSearchInput" placeholder="Cari Kode, Nama, Email, Kamar..." oninput="handleBookingSearch()">
+            </div>
+
+            <select class="select-filter" id="bookingStatusFilter" onchange="loadBookings()">
+              <option value="all">Semua Status</option>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="checked_in">Checked In</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Kode</th>
+                <th>Tamu & Kontak</th>
+                <th>Kamar & Lantai</th>
+                <th>Durasi Menginap</th>
+                <th>Total Tagihan</th>
+                <th>Pembayaran</th>
+                <th>Status Booking</th>
+                <th>Aksi Operasional</th>
+              </tr>
+            </thead>
+            <tbody id="allBookingsTableBody">
+              <tr>
+                <td colspan="8" style="text-align: center; padding: 30px;">
+                  <i class="fa-solid fa-spinner fa-spin text-gold"></i> Memuat data reservasi...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         TAB 3: INVENTORI KAMAR
+         ============================================================ -->
+    <section class="tab-pane" id="pane-rooms">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div>
+            <h3 class="admin-card-title">Status Kamar Fisik & Okupansi Per Lantai</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">Pantau ketersediaan kamar, kamar terisi, dan atur status pemeliharaan (maintenance).</p>
+          </div>
+          <button class="btn btn-gold btn-sm" onclick="openAddRoomModal()">
+            <i class="fa-solid fa-plus"></i> Tambah Kamar Baru
+          </button>
+        </div>
+
+        <!-- Dynamic Rooms Grid Grouped by Floor -->
+        <div id="roomsInventoryContainer">
+          <div style="text-align: center; padding: 40px;">
+            <i class="fa-solid fa-spinner fa-spin text-gold" style="font-size: 2rem;"></i>
+            <p style="margin-top: 10px; color: var(--text-secondary);">Memuat data kamar...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         TAB 4: DIREKTORI TAMU
+         ============================================================ -->
+    <section class="tab-pane" id="pane-guests">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div>
+            <h3 class="admin-card-title">Direktori Tamu Terdaftar</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">Daftar seluruh tamu yang memiliki akun di LUXURY Hotel & Resort.</p>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Nama Lengkap</th>
+                <th>Email</th>
+                <th>No. Telepon</th>
+                <th>Total Reservasi</th>
+                <th>Total Transaksi</th>
+                <th>Terdaftar Sejak</th>
+                <th>Status Akun</th>
+                <th>Aksi Operasional</th>
+              </tr>
+            </thead>
+            <tbody id="guestsTableBody">
+              <tr>
+                <td colspan="8" style="text-align: center; padding: 30px;">
+                  <i class="fa-solid fa-spinner fa-spin text-gold"></i> Memuat data tamu...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================================================
+       3. MODAL DIALOGS
+       ============================================================ -->
+
+  <!-- Modal Tambah Kamar Baru -->
+  <div class="modal-overlay" id="addRoomModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-bed text-gold"></i> Tambah Kamar Fisik Baru</h3>
+        <button class="modal-close-btn" onclick="closeAdminModal('addRoomModal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="addRoomForm" onsubmit="handleAddRoomSubmit(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="newRoomNumber">Nomor Kamar <span style="color: var(--accent-rose);">*</span></label>
+            <input type="text" class="form-control" id="newRoomNumber" placeholder="Contoh: 105, 203, 301" required>
+          </div>
+
+          <div class="form-group">
+            <label for="newRoomTypeId">Tipe Kamar <span style="color: var(--accent-rose);">*</span></label>
+            <select class="form-control" id="newRoomTypeId" required>
+              <option value="">-- Pilih Tipe Kamar --</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="newRoomFloor">Lantai <span style="color: var(--accent-rose);">*</span></label>
+            <input type="number" class="form-control" id="newRoomFloor" min="1" max="50" placeholder="1" required>
+          </div>
+
+          <div class="form-group">
+            <label for="newRoomStatus">Status Awal</label>
+            <select class="form-control" id="newRoomStatus">
+              <option value="available">Available (Siap Dihuni)</option>
+              <option value="maintenance">Maintenance (Perbaikan)</option>
+              <option value="cleaning">Cleaning (Pembersihan)</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-glass btn-sm" onclick="closeAdminModal('addRoomModal')">Batal</button>
+          <button type="submit" class="btn btn-gold btn-sm" id="submitAddRoomBtn">
+            <i class="fa-solid fa-floppy-disk"></i> Simpan Kamar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Admin Login Gate (Jika belum login admin) -->
+  <div class="modal-overlay" id="adminLoginGateModal">
+    <div class="modal-dialog" style="max-width: 450px;">
+      <div class="modal-header" style="justify-content: center; text-align: center;">
+        <h3 style="font-size: 1.4rem;"><i class="fa-solid fa-shield-halved text-gold"></i> Autentikasi Admin</h3>
+      </div>
+      <form id="adminLoginForm" onsubmit="handleAdminLoginSubmit(event)">
+        <div class="modal-body">
+          <p style="font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-bottom: 20px;">
+            Akses ke dashboard ini memerlukan hak akses Administrator / Resepsionis.
+          </p>
+
+          <div class="form-group">
+            <label for="adminEmail">Email Administrator</label>
+            <input type="email" class="form-control" id="adminEmail" value="admin@luminaresort.com" required>
+          </div>
+
+          <div class="form-group">
+            <label for="adminPassword">Password</label>
+            <input type="password" class="form-control" id="adminPassword" value="admin123" required>
+          </div>
+        </div>
+        <div class="modal-footer" style="justify-content: space-between;">
+          <a href="index.html" class="btn btn-glass btn-sm">Kembali ke Web Tamu</a>
+          <button type="submit" class="btn btn-gold btn-sm" id="adminLoginSubmitBtn">
+            <i class="fa-solid fa-lock"></i> Masuk Admin
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JavaScript Admin Controller -->
+  <script src="assets/js/admin.js"></script>
+</body>
+</html>

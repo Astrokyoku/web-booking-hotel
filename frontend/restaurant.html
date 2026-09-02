@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restoran Angie — LUXURY Hotel & Resort</title>
+  <link rel="icon" href="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=64&h=64&fit=crop" type="image/jpeg">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- NAVIGATION BAR -->
+  <nav class="navbar" id="navbar">
+    <div class="container nav-wrapper">
+      <a href="index.html" class="brand-logo">
+        <span class="brand-title">LUXURY</span>
+        <span class="brand-subtitle">HOTEL & RESORT</span>
+      </a>
+
+      <ul class="nav-menu">
+        <li><a href="index.html#rooms" class="nav-link">Kamar & Suite</a></li>
+        <li><a href="restaurant.html" class="nav-link active">Restoran Angie</a></li>
+        <li><a href="facilities.html" class="nav-link">Fasilitas Mewah</a></li>
+        <li><a href="mice.html" class="nav-link">MICE & Ballroom</a></li>
+      </ul>
+
+      <div class="nav-actions" id="navAuthArea">
+        <button class="btn btn-outline-gold btn-sm" id="openLoginBtn" onclick="openAuthModal('login')">
+          <i class="fa-solid fa-user-lock"></i> Masuk / Daftar
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <header class="hero" style="background: linear-gradient(rgba(7, 10, 18, 0.7), rgba(7, 10, 18, 0.9)), url('https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1920&q=80') center/cover;">
+    <div class="container">
+      <div class="hero-content" style="padding-top: 100px; padding-bottom: 60px;">
+        <span class="hero-tag"><i class="fa-solid fa-utensils"></i> Exquisite Fine Dining</span>
+        <h1 class="hero-headline">Restoran "Angie"</h1>
+        <p class="hero-subhead">Nikmati simfoni cita rasa luar biasa dengan atmosfer mewah. Mahakarya kuliner dari chef bertaraf internasional kami, disajikan khusus untuk Anda.</p>
+        <button class="btn btn-gold" onclick="document.getElementById('bookingSection').scrollIntoView({behavior: 'smooth'})" style="margin-top: 20px;">
+          Reservasi Meja Sekarang
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MENU SECTION -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Katalog Menu Spesial</h2>
+        <p>Eksplorasi hidangan unggulan dari The Angie Culinary Team.</p>
+      </div>
+      
+      <div id="restaurantMenusGrid" class="rooms-grid">
+        <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+          <i class="fa-solid fa-spinner fa-spin text-gold" style="font-size: 2rem;"></i>
+          <p style="margin-top: 10px; color: var(--text-secondary);">Memuat menu restoran...</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BOOKING SECTION -->
+  <section class="section" id="bookingSection" style="background: rgba(197, 160, 89, 0.05);">
+    <div class="container">
+      <div class="section-header">
+        <h2>Reservasi Meja Restoran</h2>
+        <p>Pastikan momen bersantap Anda sempurna dengan memesan meja terlebih dahulu.</p>
+      </div>
+
+      <div class="booking-card" style="max-width: 700px; margin: 0 auto; background: var(--bg-surface); padding: 40px; border-radius: 16px; border: 1px solid var(--gold-border);">
+        <form id="restaurantBookingForm" onsubmit="handleRestaurantBooking(event)">
+          <div class="form-group">
+            <label for="restDate">Tanggal Kedatangan <span class="text-rose">*</span></label>
+            <input type="date" class="form-control" id="restDate" required>
+          </div>
+          
+          <div class="form-group" style="margin-top: 20px;">
+            <label for="restSession">Sesi Bersantap <span class="text-rose">*</span></label>
+            <select class="form-control" id="restSession" required>
+              <option value="">Pilih Sesi...</option>
+              <option value="breakfast">Breakfast (06:00 - 10:00)</option>
+              <option value="lunch">Lunch (12:00 - 15:00)</option>
+              <option value="dinner">Dinner (18:00 - 22:00)</option>
+            </select>
+          </div>
+          
+          <div class="form-group" style="margin-top: 20px;">
+            <label for="restGuests">Jumlah Tamu <span class="text-rose">*</span></label>
+            <input type="number" class="form-control" id="restGuests" min="1" max="20" placeholder="Contoh: 2" required>
+          </div>
+          
+          <div class="form-group" style="margin-top: 20px;">
+            <label for="restRequests">Permintaan Khusus (Opsional)</label>
+            <textarea class="form-control" id="restRequests" rows="3" placeholder="Alergi makanan, kejutan ulang tahun, atau request tempat duduk..."></textarea>
+          </div>
+          
+          <button type="submit" class="btn btn-gold btn-block" style="margin-top: 30px; font-size: 1.1rem; padding: 14px;">
+            Konfirmasi Reservasi Meja
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modals & Scripts from app.js will be used -->
+  <div id="toastContainer" class="toast-container"></div>
+  
+  <script src="assets/js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Load Menus
+      fetch('/api/v1/services/restaurant/menus')
+        .then(res => res.json())
+        .then(data => {
+          const container = document.getElementById('restaurantMenusGrid');
+          if(data.status === 'SUCCESS') {
+            container.innerHTML = data.data.menus.map(m => `
+              <div class="room-card">
+                <div class="room-img-wrapper" style="height: 220px;">
+                  <img src="${m.image_url}" alt="${m.item_name}" class="room-img" loading="lazy">
+                  <div class="room-badge">${m.category.toUpperCase().replace('_', ' ')}</div>
+                </div>
+                <div class="room-content">
+                  <h3 class="room-title">${m.item_name}</h3>
+                  <p class="room-desc">${m.description || '-'}</p>
+                  <div class="room-price-box" style="margin-top: 15px;">
+                    <div class="price-val">Rp ${Number(m.price).toLocaleString('id-ID')}</div>
+                  </div>
+                </div>
+              </div>
+            `).join('');
+          }
+        }).catch(err => console.error(err));
+    });
+
+    async function handleRestaurantBooking(e) {
+      e.preventDefault();
+      
+      const token = localStorage.getItem('luxury_token');
+      if (!token) {
+        showToast('Anda harus masuk (login) terlebih dahulu untuk membuat reservasi.', 'error');
+        openAuthModal('login');
+        return;
+      }
+      
+      const payload = {
+        reservation_date: document.getElementById('restDate').value,
+        session_time: document.getElementById('restSession').value,
+        guest_count: document.getElementById('restGuests').value,
+        special_requests: document.getElementById('restRequests').value
+      };
+      
+      try {
+        const res = await fetch('/api/v1/services/restaurant/book', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        const data = await res.json();
+        if(!res.ok) throw new Error(data.message);
+        
+        showToast('Reservasi meja berhasil! Kode Booking: ' + data.data.reservation.reservation_code, 'success');
+        document.getElementById('restaurantBookingForm').reset();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+  </script>
+</body>
+</html>

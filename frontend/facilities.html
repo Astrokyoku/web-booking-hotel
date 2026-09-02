@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fasilitas Mewah — LUXURY Hotel & Resort</title>
+  <link rel="icon" href="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=64&h=64&fit=crop" type="image/jpeg">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- NAVIGATION BAR -->
+  <nav class="navbar" id="navbar">
+    <div class="container nav-wrapper">
+      <a href="index.html" class="brand-logo">
+        <span class="brand-title">LUXURY</span>
+        <span class="brand-subtitle">HOTEL & RESORT</span>
+      </a>
+
+      <ul class="nav-menu">
+        <li><a href="index.html#rooms" class="nav-link">Kamar & Suite</a></li>
+        <li><a href="restaurant.html" class="nav-link">Restoran Angie</a></li>
+        <li><a href="facilities.html" class="nav-link active">Fasilitas Mewah</a></li>
+        <li><a href="mice.html" class="nav-link">MICE & Ballroom</a></li>
+      </ul>
+
+      <div class="nav-actions" id="navAuthArea">
+        <button class="btn btn-outline-gold btn-sm" id="openLoginBtn" onclick="openAuthModal('login')">
+          <i class="fa-solid fa-user-lock"></i> Masuk / Daftar
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <header class="hero" style="background: linear-gradient(rgba(7, 10, 18, 0.6), rgba(7, 10, 18, 0.9)), url('https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=1920&q=80') center/cover;">
+    <div class="container">
+      <div class="hero-content" style="padding-top: 100px; padding-bottom: 60px;">
+        <span class="hero-tag"><i class="fa-solid fa-spa"></i> World-Class Amenities</span>
+        <h1 class="hero-headline">Fasilitas Mewah Bintang 5</h1>
+        <p class="hero-subhead">Rasakan pengalaman menginap tanpa batas dengan fasilitas rekreasi, relaksasi, dan kebugaran berstandar internasional.</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- FACILITIES SECTION -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Eksplorasi Fasilitas Kami</h2>
+        <p>Setiap momen Anda berharga, nikmati fasilitas eksklusif khusus tamu menginap.</p>
+      </div>
+      
+      <div id="facilitiesGrid" class="rooms-grid">
+        <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+          <i class="fa-solid fa-spinner fa-spin text-gold" style="font-size: 2rem;"></i>
+          <p style="margin-top: 10px; color: var(--text-secondary);">Memuat data fasilitas...</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modals & Scripts -->
+  <div id="toastContainer" class="toast-container"></div>
+  <script src="assets/js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      fetch('/api/v1/services/facilities')
+        .then(res => res.json())
+        .then(data => {
+          const container = document.getElementById('facilitiesGrid');
+          if(data.status === 'SUCCESS') {
+            container.innerHTML = data.data.facilities.map(f => `
+              <div class="room-card" style="display: flex; flex-direction: column;">
+                <div class="room-img-wrapper" style="height: 250px;">
+                  <img src="${f.image_url}" alt="${f.title}" class="room-img" loading="lazy">
+                  <div class="room-badge" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);"><i class="fa-regular fa-clock"></i> ${f.opening_hours}</div>
+                </div>
+                <div class="room-content" style="flex: 1; display: flex; flex-direction: column;">
+                  <h3 class="room-title">${f.title}</h3>
+                  <div style="font-size: 0.8rem; color: var(--gold-light); margin-bottom: 10px;">Kategori: ${f.category}</div>
+                  <p class="room-desc" style="flex: 1;">${f.description}</p>
+                </div>
+              </div>
+            `).join('');
+          }
+        }).catch(err => console.error(err));
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="LUXURY Hotel & Resort - Nikmati pengalaman menginap bintang 5 tak terlupakan dengan pemandangan eksklusif, fasilitas kelas dunia, dan kenyamanan sempurna.">
+  <meta name="keywords" content="hotel luxury, luxury resort, booking hotel, reservasi hotel bintang 5, kamar mewah">
+  <title>LUXURY Hotel & Resort — Sanctuary of Elegance</title>
+
+  <!-- Favicon -->
+  <link rel="icon" href="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=64&h=64&fit=crop" type="image/jpeg">
+
+  <!-- Google Fonts & Stylesheet -->
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- ============================================================
+       1. NAVIGATION BAR
+       ============================================================ -->
+  <nav class="navbar" id="navbar">
+    <div class="container nav-wrapper">
+      <a href="#" class="brand-logo">
+        <span class="brand-title">LUXURY</span>
+        <span class="brand-subtitle">HOTEL & RESORT</span>
+      </a>
+
+      <ul class="nav-menu">
+        <li><a href="index.html#rooms" class="nav-link">Kamar & Suite</a></li>
+        <li><a href="restaurant.html" class="nav-link">Restoran Angie</a></li>
+        <li><a href="facilities.html" class="nav-link">Fasilitas Mewah</a></li>
+        <li><a href="mice.html" class="nav-link">MICE & Ballroom</a></li>
+      </ul>
+
+      <div class="nav-actions" id="navAuthArea">
+        <!-- Will be populated dynamically by app.js (Login button OR User Badge) -->
+        <button class="btn btn-outline-gold btn-sm" id="openLoginBtn" onclick="openAuthModal('login')">
+          <i class="fa-solid fa-user-lock"></i> Masuk / Daftar
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ============================================================
+       2. HERO SECTION & FLOATING SEARCH ENGINE
+       ============================================================ -->
+  <header class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <span class="hero-tag"><i class="fa-solid fa-crown"></i> Sanctuary of World-Class Luxury</span>
+        <h1 class="hero-headline">Keanggunan Abadi Dalam Setiap Sudut Penginapan</h1>
+        <p class="hero-subhead">Temukan kenyamanan eksklusif bintang lima, pemandangan laut spektakuler, dan keramahtamahan istimewa yang dirancang khusus untuk Anda.</p>
+      </div>
+
+      <!-- Real-time Availability Engine Bar -->
+      <div class="search-card">
+        <form id="searchAvailabilityForm" class="search-form-grid" onsubmit="handleSearchRooms(event)">
+          <div class="form-group">
+            <label class="form-label" for="searchCheckIn">
+              <i class="fa-solid fa-calendar-check text-gold"></i> Check-In
+            </label>
+            <input type="date" id="searchCheckIn" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="searchCheckOut">
+              <i class="fa-solid fa-calendar-xmark text-gold"></i> Check-Out
+            </label>
+            <input type="date" id="searchCheckOut" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="searchGuests">
+              <i class="fa-solid fa-user-group text-gold"></i> Tamu
+            </label>
+            <select id="searchGuests" class="form-control">
+              <option value="1">1 Orang Tamu</option>
+              <option value="2" selected>2 Orang Tamu</option>
+              <option value="3">3 Orang Tamu</option>
+              <option value="4">4 Orang Tamu</option>
+              <option value="5">5+ Tamu (Family)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="searchMaxPrice">
+              <i class="fa-solid fa-tag text-gold"></i> Maks. Tarif
+            </label>
+            <select id="searchMaxPrice" class="form-control">
+              <option value="">Semua Tarif</option>
+              <option value="600000">Di bawah Rp 600 Ribu</option>
+              <option value="1000000">Di bawah Rp 1 Juta</option>
+              <option value="2000000">Di bawah Rp 2 Juta</option>
+              <option value="3000000">Di atas Rp 2 Juta</option>
+            </select>
+          </div>
+
+          <div class="search-btn-wrap">
+            <button type="submit" class="btn btn-gold btn-block" id="searchSubmitBtn">
+              <i class="fa-solid fa-magnifying-glass"></i> Cek Kamar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       3. ROOMS & SUITES SHOWCASE SECTION
+       ============================================================ -->
+  <section id="rooms" class="section-rooms">
+    <div class="container">
+      <div style="text-align: center;">
+        <span class="section-tag">Akomodasi Pilihan</span>
+        <h2 class="section-title">Kamar & Suite Eksklusif</h2>
+        <p class="section-desc" id="roomsSubtitle">Pilihan akomodasi mewah dengan fasilitas modern berstandar internasional dan pemandangan luar biasa.</p>
+      </div>
+
+      <!-- Container tempat render kartu kamar dinamis -->
+      <div class="rooms-grid" id="roomsContainer">
+        <!-- Skeleton Loading Placeholder -->
+        <div style="text-align: center; grid-column: 1/-1; padding: 60px 0;">
+          <i class="fa-solid fa-circle-notch fa-spin text-gold" style="font-size: 2.5rem;"></i>
+          <p style="margin-top: 16px; color: var(--text-secondary);">Memuat katalog kamar terbaik kami...</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       4. RESORT FACILITIES SECTION
+       ============================================================ -->
+  <section id="facilities" class="section-features">
+    <div class="container">
+      <div style="text-align: center;">
+        <span class="section-tag">Fasilitas Bintang Lima</span>
+        <h2 class="section-title">Kenyamanan Tanpa Kompromi</h2>
+        <p class="section-desc">Setiap detik di LUXURY dirancang untuk memanjakan seluruh panca indra Anda.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-water-ladder"></i></div>
+          <h3 class="feature-title">Infinity Sky Pool</h3>
+          <p class="feature-desc">Kolam renang tanpa batas di lantai teratas dengan pemandangan matahari terbenam yang memukau.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-utensils"></i></div>
+          <h3 class="feature-title">Michelin-Star Dining</h3>
+          <p class="feature-desc">Hidangan mahakarya kuliner internasional olahan koki bintang dunia dengan cita rasa autentik.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-spa"></i></div>
+          <h3 class="feature-title">Royal Wellness Spa</h3>
+          <p class="feature-desc">Perawatan relaksasi holistik eksklusif menggunakan minyak aromaterapi organik terbaik.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-helicopter"></i></div>
+          <h3 class="feature-title">Helipad & VIP Concierge</h3>
+          <p class="feature-desc">Layanan antar-jemput privat 24 jam dengan staf butler profesional berdedikasi tinggi.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       5. GUEST REVIEWS SECTION
+       ============================================================ -->
+  <section id="reviews" class="section-reviews">
+    <div class="container">
+      <div style="text-align: center;">
+        <span class="section-tag">Testimoni Tamu</span>
+        <h2 class="section-title">Apa Kata Mereka Tentang Kami</h2>
+        <p class="section-desc">Pengalaman nyata dari para tamu istimewa yang telah menikmati kemewahan LUXURY Hotel.</p>
+      </div>
+
+      <div class="reviews-grid">
+        <div class="review-card">
+          <div class="review-stars">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+          </div>
+          <p class="review-quote">"Pengalaman menginap terbaik sepanjang masa! Suite Room sangat luas, kasur sangat empuk, dan pemandangan sunset dari balkon benar-benar tak ternilai."</p>
+          <div class="reviewer-info">
+            <div class="reviewer-avatar">BS</div>
+            <div>
+              <div class="reviewer-name">Budi Santoso</div>
+              <div class="reviewer-role">Verified Guest • Jakarta</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="review-card">
+          <div class="review-stars">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+          </div>
+          <p class="review-quote">"Pelayanan staf sangat luar biasa ramah dan cepat tanggap. Breakfast di restoran bintang 5 mereka menyajikan menu yang sangat lezat dan variatif."</p>
+          <div class="reviewer-info">
+            <div class="reviewer-avatar">SA</div>
+            <div>
+              <div class="reviewer-name">Siti Aisyah</div>
+              <div class="reviewer-role">Verified Guest • Surabaya</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="review-card">
+          <div class="review-stars">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+          </div>
+          <p class="review-quote">"Sistem bookingnya sangat cepat, kalkulasi pajaknya transparan, dan begitu tiba di hotel kamar sudah siap tanpa antre lama. Pasti akan kembali lagi!"</p>
+          <div class="reviewer-info">
+            <div class="reviewer-avatar">RP</div>
+            <div>
+              <div class="reviewer-name">Reza Pratama</div>
+              <div class="reviewer-role">Verified Guest • Bali</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       6. FOOTER
+       ============================================================ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <span class="brand-title" style="font-size: 1.8rem;">LUXURY</span>
+          <p class="brand-subtitle" style="margin-bottom: 20px;">HOTEL & RESORT</p>
+          <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 320px;">
+            Menyajikan standar tertinggi kemewahan dan keramahtamahan di jantung destinasi paling eksotis.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="footer-title">Navigasi</h4>
+          <ul class="footer-links">
+            <li><a href="#rooms">Daftar Kamar</a></li>
+            <li><a href="#facilities">Fasilitas Resor</a></li>
+            <li><a href="#reviews">Ulasan & Rating</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-title">Bantuan</h4>
+          <ul class="footer-links">
+            <li><a href="#" onclick="openMyBookingsModal()">Cek Reservasi</a></li>
+            <li><a href="#">Syarat & Ketentuan</a></li>
+            <li><a href="#">Kebijakan Privasi</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-title">Kontak & Lokasi</h4>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 10px;">
+            <i class="fa-solid fa-location-dot text-gold"></i> Jl. Sunset Boulevard No. 88, Resort Haven
+          </p>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 10px;">
+            <i class="fa-solid fa-phone text-gold"></i> +62 21 8888 9999
+          </p>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            <i class="fa-solid fa-envelope text-gold"></i> reservations@luxuryhotel.com
+          </p>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        &copy; 2026 LUXURY Hotel & Resort. Seluruh Hak Cipta Dilindungi.
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============================================================
+       7. MODALS (Popups)
+       ============================================================ -->
+
+  <!-- A. AUTH MODAL (Login / Register) -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title font-serif" id="authModalTitle">Masuk ke Akun Anda</h3>
+        <button class="modal-close" onclick="closeModal('authModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="auth-tabs">
+          <button class="auth-tab-btn active" id="tabLoginBtn" onclick="switchAuthTab('login')">Masuk</button>
+          <button class="auth-tab-btn" id="tabRegisterBtn" onclick="switchAuthTab('register')">Daftar Baru</button>
+        </div>
+
+        <!-- Form Login -->
+        <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label"><i class="fa-solid fa-envelope"></i> Alamat Email</label>
+            <input type="email" id="loginEmail" class="form-control" placeholder="contoh: budi@gmail.com" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 24px;">
+            <label class="form-label"><i class="fa-solid fa-key"></i> Kata Sandi</label>
+            <input type="password" id="loginPassword" class="form-control" placeholder="Masukkan kata sandi" required>
+          </div>
+          <button type="submit" class="btn btn-gold btn-block" id="loginSubmitBtn">
+            <i class="fa-solid fa-right-to-bracket"></i> Masuk Sekarang
+          </button>
+        </form>
+
+        <!-- Form Register -->
+        <form id="registerForm" style="display: none;" onsubmit="handleRegisterSubmit(event)">
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label"><i class="fa-solid fa-user"></i> Nama Lengkap</label>
+            <input type="text" id="regFullName" class="form-control" placeholder="Nama lengkap Anda" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label"><i class="fa-solid fa-envelope"></i> Alamat Email</label>
+            <input type="email" id="regEmail" class="form-control" placeholder="contoh: budi@gmail.com" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label"><i class="fa-solid fa-phone"></i> Nomor Telepon / WhatsApp</label>
+            <input type="tel" id="regPhone" class="form-control" placeholder="contoh: 08123456789">
+          </div>
+          <div class="form-group" style="margin-bottom: 24px;">
+            <label class="form-label"><i class="fa-solid fa-key"></i> Kata Sandi (Min. 6 Karakter)</label>
+            <input type="password" id="regPassword" class="form-control" placeholder="Buat kata sandi aman" minlength="6" required>
+          </div>
+          <button type="submit" class="btn btn-gold btn-block" id="registerSubmitBtn">
+            <i class="fa-solid fa-user-plus"></i> Buat Akun Baru
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- B. BOOKING MODAL (Pemesanan Kamar & Pajak 12%) -->
+  <div class="modal-overlay" id="bookingModal">
+    <div class="modal-content" style="max-width: 640px;">
+      <div class="modal-header">
+        <h3 class="modal-title font-serif">Reservasi Kamar</h3>
+        <button class="modal-close" onclick="closeModal('bookingModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="bookingRoomSummary" style="display: flex; gap: 16px; align-items: center; margin-bottom: 20px; padding: 14px; background: var(--bg-surface-elevated); border-radius: var(--radius-sm);">
+          <!-- Populated by JS -->
+        </div>
+
+        <form id="createBookingForm" onsubmit="handleCreateBookingSubmit(event)">
+          <input type="hidden" id="bookRoomTypeId">
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div class="form-group">
+              <label class="form-label"><i class="fa-solid fa-calendar-check text-gold"></i> Check-In</label>
+              <input type="date" id="bookCheckIn" class="form-control" onchange="recalculateModalPrice()" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label"><i class="fa-solid fa-calendar-xmark text-gold"></i> Check-Out</label>
+              <input type="date" id="bookCheckOut" class="form-control" onchange="recalculateModalPrice()" required>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label"><i class="fa-solid fa-user-group text-gold"></i> Jumlah Tamu</label>
+            <select id="bookGuestCount" class="form-control" required>
+              <option value="1">1 Orang</option>
+              <option value="2" selected>2 Orang</option>
+              <option value="3">3 Orang</option>
+              <option value="4">4 Orang</option>
+              <option value="5">5 Orang</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label class="form-label"><i class="fa-solid fa-pen-fancy text-gold"></i> Permintaan Khusus (Opsional)</label>
+            <textarea id="bookSpecialRequests" class="form-control" rows="2" placeholder="Contoh: Kamar non-smoking, bantal ekstra, atau check-in larut malam."></textarea>
+          </div>
+
+          <!-- Rincian Biaya & Pajak 12% Transparan -->
+          <div class="price-breakdown-box" id="modalPriceBreakdown">
+            <div class="breakdown-row">
+              <span>Tarif Kamar per Malam</span>
+              <span id="calcBasePrice">Rp 0</span>
+            </div>
+            <div class="breakdown-row">
+              <span>Durasi Menginap</span>
+              <span id="calcNights">0 Malam</span>
+            </div>
+            <div class="breakdown-row">
+              <span>Subtotal</span>
+              <span id="calcSubtotal">Rp 0</span>
+            </div>
+            <div class="breakdown-row">
+              <span>Pajak & Layanan Hotel (12%)</span>
+              <span id="calcTax" class="text-gold">Rp 0</span>
+            </div>
+            <div class="breakdown-row total">
+              <span>TOTAL PEMBAYARAN</span>
+              <span id="calcTotal" class="gradient-gold-text">Rp 0</span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-gold btn-block" id="submitBookingBtn">
+            <i class="fa-solid fa-lock"></i> Konfirmasi & Lanjut ke Pembayaran
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- C. PAYMENT MODAL (Simulasi Pembayaran) -->
+  <div class="modal-overlay" id="paymentModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title font-serif">Pembayaran Reservasi</h3>
+        <button class="modal-close" onclick="closeModal('paymentModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="paymentDetailsArea" style="margin-bottom: 24px; text-align: center;">
+          <!-- Populated by JS -->
+        </div>
+
+        <div class="form-group" style="margin-bottom: 24px;">
+          <label class="form-label"><i class="fa-solid fa-wallet text-gold"></i> Pilih Metode Pembayaran</label>
+          <select id="paymentMethodSelect" class="form-control" onchange="renderPaymentInstructions()">
+            <option value="bank_transfer">BCA / Mandiri Virtual Account</option>
+            <option value="ewallet">QRIS / GoPay / OVO / Dana</option>
+            <option value="credit_card">Kartu Kredit / Debit Visa & Mastercard</option>
+            <option value="cash">Bayar Langsung Saat Check-in di Hotel</option>
+          </select>
+        </div>
+
+        <div id="paymentInstructionsBox" style="background: var(--bg-surface-elevated); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 24px; border: 1px solid var(--gold-border);">
+          <!-- Render QR or VA info -->
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 16px;">
+          <button class="btn btn-gold" style="flex: 2;" id="confirmPayBtn" onclick="handleProcessPayment()">
+            <i class="fa-solid fa-circle-check"></i> Konfirmasi Pembayaran
+          </button>
+          <button class="btn btn-outline-danger" style="flex: 1;" id="cancelBookingBtn" onclick="handleCancelCurrentBooking()">
+            <i class="fa-solid fa-ban"></i> Batalkan
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- D. E-VOUCHER / INVOICE MODAL (Printable) -->
+  <div class="modal-overlay" id="voucherModal">
+    <div class="modal-content" style="max-width: 680px;">
+      <div class="modal-header">
+        <h3 class="modal-title font-serif">E-Voucher & Bukti Reservasi</h3>
+        <button class="modal-close" onclick="closeModal('voucherModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="voucherPrintArea" class="printable-voucher" style="background: #ffffff; color: #0f172a; padding: 28px; border-radius: var(--radius-sm); border: 2px solid #c5a059;">
+          <!-- Populated by JS -->
+        </div>
+        <div style="display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;" id="voucherActionButtons">
+          <button class="btn btn-gold" style="flex: 1;" onclick="window.print()">
+            <i class="fa-solid fa-print"></i> Cetak / Simpan PDF
+          </button>
+          <button class="btn btn-outline-danger" id="voucherCancelBtn" onclick="handleCancelVoucherBooking()">
+            <i class="fa-solid fa-ban"></i> Batalkan Reservasi
+          </button>
+          <button class="btn btn-glass" onclick="closeModal('voucherModal')">Tutup</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- E. MY BOOKINGS MODAL (Riwayat Tamu) -->
+  <div class="modal-overlay" id="myBookingsModal">
+    <div class="modal-content" style="max-width: 760px;">
+      <div class="modal-header">
+        <h3 class="modal-title font-serif">Riwayat Reservasi Saya</h3>
+        <button class="modal-close" onclick="closeModal('myBookingsModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="myBookingsList" style="display: flex; flex-direction: column; gap: 16px;">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- JavaScript Frontend -->
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
