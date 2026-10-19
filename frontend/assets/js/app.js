@@ -5,13 +5,14 @@
 
 // Deteksi otomatis URL Backend API
 const getApiBase = () => {
-  // Jika dibuka lewat Live Server (port 5500 dsb) atau file protocol, arahkan ke backend di http://localhost:5000/api/v1
-  if (
-    typeof window !== 'undefined' &&
-    (window.location.protocol === 'file:' || (window.location.port && window.location.port !== '5000'))
-  ) {
-    return 'http://localhost:5000/api/v1';
+  if (typeof window !== 'undefined') {
+    // Hanya jika testing di lokal lewat Live Server (port 5500 dsb) atau file protocol
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (window.location.protocol === 'file:' || (isLocalhost && window.location.port && window.location.port !== '5000')) {
+      return 'http://localhost:5000/api/v1';
+    }
   }
+  // Di VPS/Server Production (Domain/IP/Reverse Proxy), gunakan relative path
   return '/api/v1';
 };
 
