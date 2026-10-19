@@ -687,6 +687,105 @@ h1, h2, h3, h4, .font-serif {
   color: var(--text-muted);
 }
 
+/* Reviews Summary Bar */
+.reviews-summary-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--gold-border);
+  border-radius: var(--radius-md);
+  padding: 18px 24px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+  text-align: left;
+}
+.review-score-box {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.score-number {
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: var(--gold-primary);
+  line-height: 1;
+  font-family: var(--font-serif);
+}
+.score-stars {
+  color: #fbbf24;
+  font-size: 1.15rem;
+}
+.score-count {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  display: block;
+  margin-top: 2px;
+}
+.btn-write-review {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+}
+
+/* Interactive Star Rating in Modal */
+.interactive-star-rating {
+  display: inline-flex;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 2.2rem;
+  user-select: none;
+}
+.star-btn {
+  color: #4b5563;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+.star-btn.active {
+  color: #fbbf24;
+  text-shadow: 0 0 12px rgba(251, 191, 36, 0.45);
+}
+.star-btn:hover {
+  transform: scale(1.25);
+}
+
+/* Review Card Details */
+.review-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.review-badge-room {
+  font-size: 0.75rem;
+  color: var(--gold-light);
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+.review-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.review-delete-btn {
+  background: transparent;
+  border: none;
+  color: var(--accent-rose);
+  cursor: pointer;
+  font-size: 0.85rem;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  padding: 4px;
+}
+.review-delete-btn:hover {
+  opacity: 1;
+}
+
 /* --- 10. MODAL DIALOGS --- */
 .modal-overlay {
   position: fixed;

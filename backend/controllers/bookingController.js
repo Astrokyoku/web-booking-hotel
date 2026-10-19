@@ -291,11 +291,15 @@ const getMyBookings = async (req, res, next) => {
         rt.image_url AS room_image,
         r.room_number,
         p.status AS payment_status,
-        p.payment_method
+        p.payment_method,
+        rev.id AS review_id,
+        rev.rating AS review_rating,
+        rev.comment AS review_comment
       FROM bookings b
       JOIN rooms r ON b.room_id = r.id
       JOIN room_types rt ON r.room_type_id = rt.id
       LEFT JOIN payments p ON b.id = p.booking_id
+      LEFT JOIN reviews rev ON b.id = rev.booking_id
       WHERE b.user_id = $1
       ORDER BY b.created_at DESC;
     `;
@@ -342,12 +346,15 @@ const getAllBookings = async (req, res, next) => {
         rt.name AS room_type_name,
         r.room_number,
         p.status AS payment_status,
-        p.payment_method
+        p.payment_method,
+        rev.rating AS review_rating,
+        rev.comment AS review_comment
       FROM bookings b
       JOIN users u ON b.user_id = u.id
       JOIN rooms r ON b.room_id = r.id
       JOIN room_types rt ON r.room_type_id = rt.id
       LEFT JOIN payments p ON b.id = p.booking_id
+      LEFT JOIN reviews rev ON b.id = rev.booking_id
       WHERE 1=1
     `;
 

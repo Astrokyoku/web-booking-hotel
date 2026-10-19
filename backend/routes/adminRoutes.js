@@ -89,4 +89,18 @@ router.get('/restaurant-bookings', adminController.getAllRestaurantBookings);
  */
 router.put('/restaurant-bookings/:id/status', adminController.updateRestaurantBookingStatus);
 
+/**
+ * @route   GET /api/v1/admin/reviews
+ * @desc    Mengambil seluruh daftar ulasan & rating hotel dari para tamu
+ * @access  Private (Admin Only)
+ */
+router.get('/reviews', adminController.getAllReviewsAdmin);
+
+/**
+ * @route   DELETE /api/v1/admin/reviews/:id
+ * @desc    Menghapus ulasan tertentu (moderasi admin)
+ * @access  Private (Admin Only)
+ */
+router.delete('/reviews/:id', adminController.deleteReviewAdmin);
+
 module.exports = router;

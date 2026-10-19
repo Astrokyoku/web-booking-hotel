@@ -84,6 +84,9 @@ app.use('/api/v1/admin', require('./routes/adminRoutes'));
 // Extended Hotel Services (Fase 6)
 app.use('/api/v1/services', require('./routes/serviceRoutes'));
 
+// Hotel Reviews & Ratings
+app.use('/api/v1/reviews', require('./routes/reviewRoutes'));
+
 // ============================================================
 // ERROR HANDLING MIDDLEWARE
 // ============================================================

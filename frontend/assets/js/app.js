@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initNavbarScroll();
   updateAuthUI();
   fetchRooms();
+  fetchHotelReviews();
 });
 
 /**
@@ -837,6 +838,7 @@ async function openMyBookingsModal() {
       if (b.booking_status === 'cancelled') badgeClass = 'var(--accent-rose)';
 
       const isCancellable = b.booking_status === 'pending' || b.booking_status === 'confirmed';
+      const isReviewed = Boolean(b.review_id);
 
       return `
         <div style="background: var(--bg-surface-elevated); border: 1px solid var(--gold-border); border-radius: var(--radius-sm); padding: 18px; display: flex; flex-direction: column; gap: 10px;">
@@ -856,10 +858,19 @@ async function openMyBookingsModal() {
 
           <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 8px;">
             <span style="font-weight: 700; color: var(--gold-primary);">Rp ${Number(b.total_price).toLocaleString('id-ID')} (Inc. Tax 12%)</span>
-            <div style="display: flex; gap: 8px;">
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
               <button class="btn btn-outline-gold btn-sm" onclick="openVoucherModal('${b.id}')">
                 <i class="fa-solid fa-file-invoice"></i> E-Voucher
               </button>
+              ${isReviewed ? `
+                <span style="font-size: 0.8rem; font-weight: 600; color: var(--gold-light); background: rgba(212,175,55,0.12); border: 1px solid var(--gold-border); padding: 4px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px;">
+                  <i class="fa-solid fa-star text-gold"></i> Diulas (${b.review_rating}★)
+                </span>
+              ` : (b.booking_status !== 'cancelled' ? `
+                <button class="btn btn-outline-gold btn-sm" onclick="openReviewModal('${b.id}', '${b.booking_code}', '${b.room_type_name}')" title="Beri Rating & Komen">
+                  <i class="fa-solid fa-star"></i> Beri Rating
+                </button>
+              ` : '')}
               ${b.booking_status === 'pending' ? `
                 <button class="btn btn-gold btn-sm" onclick="openPaymentModal({ booking: { id: '${b.id}', booking_code: '${b.booking_code}', room_type_name: '${b.room_type_name}', room_number: '${b.room_number}', floor: 1 }, pricing_breakdown: { total_price: ${b.total_price}, tax_amount: Math.round(${b.total_price} * 0.12 / 1.12) }, payment: { status: 'unpaid' } })">
                   Bayar
@@ -1031,4 +1042,356 @@ function showToast(message, type = 'success') {
     toast.style.transition = 'all 0.3s ease';
     setTimeout(() => toast.remove(), 300);
   }, 4000);
+}
+
+// ============================================================
+// 9. GUEST REVIEWS & HOTEL RATING SYSTEM
+// ============================================================
+
+const RATING_LABELS = {
+  1: '⭐ 1 / 5 - Perlu Peningkatan',
+  2: '⭐⭐ 2 / 5 - Kurang Memuaskan',
+  3: '⭐⭐⭐ 3 / 5 - Cukup Baik',
+  4: '⭐⭐⭐⭐ 4 / 5 - Sangat Bagus & Memuaskan',
+  5: '⭐⭐⭐⭐⭐ 5 / 5 - Luar Biasa & Mewah!',
+};
+
+/**
+ * Memuat dan merender daftar ulasan & rating hotel dari backend
+ */
+async function fetchHotelReviews() {
+  const grid = document.getElementById('reviewsGrid');
+  const avgNum = document.getElementById('reviewAvgRating');
+  const avgStars = document.getElementById('reviewAvgStars');
+  const totalCount = document.getElementById('reviewTotalCount');
+
+  if (!grid) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/reviews`);
+    if (!res.ok) throw new Error('Gagal memuat ulasan');
+
+    const result = await res.json();
+    const { stats, reviews } = result.data;
+
+    // Update Average Rating Score & Stars
+    if (avgNum && stats) {
+      const avg = Number(stats.average_rating || 5.0).toFixed(1);
+      avgNum.textContent = avg;
+      
+      const fullStars = Math.floor(avg);
+      const hasHalf = avg - fullStars >= 0.5;
+      let starHtml = '';
+      for (let i = 1; i <= 5; i++) {
+        if (i <= fullStars) {
+          starHtml += '<i class="fa-solid fa-star"></i>';
+        } else if (i === fullStars + 1 && hasHalf) {
+          starHtml += '<i class="fa-solid fa-star-half-stroke"></i>';
+        } else {
+          starHtml += '<i class="fa-regular fa-star"></i>';
+        }
+      }
+      if (avgStars) avgStars.innerHTML = starHtml;
+      if (totalCount) {
+        totalCount.textContent = `Berdasarkan ${stats.total_reviews} ulasan tamu terverifikasi`;
+      }
+    }
+
+    if (!reviews || reviews.length === 0) {
+      grid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 48px 20px; background: var(--bg-surface-elevated); border: 1px dashed var(--gold-border); border-radius: var(--radius-md);">
+          <i class="fa-solid fa-star-half-stroke text-gold" style="font-size: 2.5rem; margin-bottom: 12px; display: block;"></i>
+          <h4 style="color: var(--gold-light); margin-bottom: 6px;">Belum Ada Ulasan Tamu</h4>
+          <p style="color: var(--text-secondary); max-width: 480px; margin: 0 auto 16px; font-size: 0.9rem;">
+            Jadilah yang pertama membagikan pengalaman dan penilaian Anda menginap di LUXURY Hotel.
+          </p>
+          <button class="btn btn-gold btn-sm" onclick="openReviewModal()">
+            <i class="fa-solid fa-pen"></i> Tulis Ulasan Pertama
+          </button>
+        </div>
+      `;
+      return;
+    }
+
+    grid.innerHTML = reviews.map(r => {
+      // Initials for avatar
+      const initials = (r.reviewer_name || 'Tamu')
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(n => n[0].toUpperCase())
+        .join('');
+
+      // Stars
+      const starIcons = Array.from({ length: 5 }, (_, idx) => 
+        `<i class="fa-${idx < r.rating ? 'solid' : 'regular'} fa-star"></i>`
+      ).join('');
+
+      // Date format
+      const dateFormatted = new Date(r.created_at).toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+
+      // Is author
+      const isMyReview = state.user && state.user.id === r.user_id;
+
+      return `
+        <div class="review-card">
+          <div class="review-header-row">
+            <div class="review-stars">${starIcons}</div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              ${r.room_type_name ? `<span class="review-badge-room"><i class="fa-solid fa-bed"></i> ${r.room_type_name}</span>` : ''}
+              ${isMyReview ? `
+                <button class="review-delete-btn" onclick="handleDeleteReview('${r.id}')" title="Hapus Ulasan Anda">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              ` : ''}
+            </div>
+          </div>
+          <p class="review-quote">"${escapeHtml(r.comment || '')}"</p>
+          <div class="reviewer-info">
+            <div class="reviewer-avatar">${initials}</div>
+            <div style="flex: 1;">
+              <div class="reviewer-name">${escapeHtml(r.reviewer_name || 'Tamu')}</div>
+              <div class="reviewer-role">
+                <span>Verified Guest</span> • <span class="review-date">${dateFormatted}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+  } catch (err) {
+    console.error('Error fetching reviews:', err);
+    grid.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align: center; color: var(--accent-rose); padding: 30px;">
+        Gagal memuat ulasan. Silakan muat ulang halaman.
+      </div>
+    `;
+  }
+}
+
+/**
+ * Membuka Modal Review & Rating
+ */
+async function openReviewModal(bookingId = '', bookingCode = '', roomTypeName = '') {
+  if (!state.token || !state.user) {
+    showToast('Silakan masuk ke akun Anda terlebih dahulu untuk memberikan ulasan & rating hotel.', 'error');
+    openAuthModal('login');
+    return;
+  }
+
+  if (state.user.status === 'blacklisted') {
+    showToast('Akses ditolak: Akun Anda sedang dalam daftar hitam (blacklist).', 'error');
+    return;
+  }
+
+  // Reset form
+  selectStarRating(5);
+  const commentInput = document.getElementById('reviewCommentText');
+  if (commentInput) commentInput.value = '';
+
+  const hiddenBookingId = document.getElementById('reviewBookingId');
+  const noticeBox = document.getElementById('reviewBookingNotice');
+  const noticeText = document.getElementById('reviewBookingNoticeText');
+  const selectGroup = document.getElementById('reviewBookingSelectGroup');
+  const selectDropdown = document.getElementById('reviewBookingSelect');
+
+  if (bookingId) {
+    // Mode booking tertentu dari riwayat
+    if (hiddenBookingId) hiddenBookingId.value = bookingId;
+    if (noticeBox) {
+      noticeBox.style.display = 'block';
+      noticeText.innerHTML = `Mengulas reservasi <strong>#${bookingCode}</strong> — Kamar: <strong>${roomTypeName}</strong>`;
+    }
+    if (selectGroup) selectGroup.style.display = 'none';
+  } else {
+    // Mode umum / dari tombol ulasan utama
+    if (hiddenBookingId) hiddenBookingId.value = '';
+    if (noticeBox) noticeBox.style.display = 'none';
+    if (selectGroup) selectGroup.style.display = 'block';
+
+    // Populate dropdown with user bookings
+    if (selectDropdown) {
+      selectDropdown.innerHTML = '<option value="">Ulasan Umum Hotel & Keramahan Staf</option>';
+      try {
+        const res = await fetch(`${API_BASE}/bookings/my-bookings`, {
+          headers: { 'Authorization': `Bearer ${state.token}` },
+        });
+        if (res.ok) {
+          const d = await res.json();
+          const bookings = d.data.bookings || [];
+          bookings.forEach(b => {
+            if (!b.review_id && b.booking_status !== 'cancelled') {
+              const opt = document.createElement('option');
+              opt.value = b.id;
+              opt.textContent = `Reservasi #${b.booking_code} (${b.room_type_name} - #${b.room_number})`;
+              selectDropdown.appendChild(opt);
+            }
+          });
+        }
+      } catch (e) {
+        console.warn('Could not fetch user bookings for review dropdown', e);
+      }
+    }
+  }
+
+  openModal('reviewModal');
+}
+
+/**
+ * Handle perubahan pilihan reservasi pada dropdown modal
+ */
+function onReviewBookingSelectChange() {
+  const selectDropdown = document.getElementById('reviewBookingSelect');
+  const hiddenBookingId = document.getElementById('reviewBookingId');
+  if (selectDropdown && hiddenBookingId) {
+    hiddenBookingId.value = selectDropdown.value;
+  }
+}
+
+/**
+ * Memilih nilai bintang (1 - 5)
+ */
+function selectStarRating(rating) {
+  const hiddenVal = document.getElementById('reviewRatingValue');
+  const label = document.getElementById('starRatingLabel');
+  if (hiddenVal) hiddenVal.value = rating;
+  if (label) label.textContent = RATING_LABELS[rating] || `${rating} Bintang`;
+
+  updateStarElements(rating);
+}
+
+/**
+ * Preview hover bintang
+ */
+function hoverStarRating(rating) {
+  updateStarElements(rating);
+}
+
+/**
+ * Reset preview bintang kembali ke nilai yang dipilih
+ */
+function resetStarRatingHover() {
+  const hiddenVal = document.getElementById('reviewRatingValue');
+  const current = hiddenVal ? parseInt(hiddenVal.value, 10) : 5;
+  updateStarElements(current);
+}
+
+function updateStarElements(rating) {
+  const stars = document.querySelectorAll('#starRatingContainer .star-btn');
+  stars.forEach(star => {
+    const starRating = parseInt(star.getAttribute('data-rating'), 10);
+    if (starRating <= rating) {
+      star.classList.add('active');
+    } else {
+      star.classList.remove('active');
+    }
+  });
+}
+
+/**
+ * Submit Ulasan & Rating ke API
+ */
+async function handleReviewSubmit(event) {
+  event.preventDefault();
+
+  if (!state.token) {
+    showToast('Sesi Anda telah berakhir, silakan login kembali.', 'error');
+    openAuthModal('login');
+    return;
+  }
+
+  const ratingVal = parseInt(document.getElementById('reviewRatingValue')?.value, 10) || 5;
+  const commentVal = document.getElementById('reviewCommentText')?.value?.trim();
+  const bookingIdVal = document.getElementById('reviewBookingId')?.value?.trim() || null;
+  const submitBtn = document.getElementById('btnSubmitReview');
+
+  if (!commentVal || commentVal.length < 3) {
+    showToast('Harap tulis komentar Anda minimal 3 karakter.', 'error');
+    return;
+  }
+
+  const originalBtnText = submitBtn.innerHTML;
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengirim...';
+
+  try {
+    const res = await fetch(`${API_BASE}/reviews`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${state.token}`,
+      },
+      body: JSON.stringify({
+        rating: ratingVal,
+        comment: commentVal,
+        booking_id: bookingIdVal,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message || 'Gagal mengirim ulasan');
+    }
+
+    showToast(data.message || '⭐ Terima kasih! Ulasan dan rating Anda berhasil disimpan.', 'success');
+    closeModal('reviewModal');
+
+    // Refresh review section on homepage
+    fetchHotelReviews();
+
+    // If my bookings modal is open, refresh it so the reviewed badge is displayed
+    const myBookingsModal = document.getElementById('myBookingsModal');
+    if (myBookingsModal && myBookingsModal.classList.contains('active')) {
+      openMyBookingsModal();
+    }
+
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originalBtnText;
+  }
+}
+
+/**
+ * Menghapus Ulasan Milik Sendiri
+ */
+async function handleDeleteReview(reviewId) {
+  if (!confirm('Apakah Anda yakin ingin menghapus ulasan ini?')) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/reviews/${reviewId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${state.token}`,
+      },
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Gagal menghapus ulasan.');
+
+    showToast(data.message || 'Ulasan berhasil dihapus.', 'success');
+    fetchHotelReviews();
+
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+/**
+ * Utility escape HTML
+ */
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }

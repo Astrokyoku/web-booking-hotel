@@ -122,7 +122,7 @@ CREATE INDEX IF NOT EXISTS idx_payments_booking ON payments(booking_id);
 CREATE TABLE IF NOT EXISTS reviews (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    booking_id      UUID NOT NULL UNIQUE REFERENCES bookings(id) ON DELETE CASCADE,
+    booking_id      UUID UNIQUE REFERENCES bookings(id) ON DELETE CASCADE,
     rating          INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
     comment         TEXT,
     created_at      TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

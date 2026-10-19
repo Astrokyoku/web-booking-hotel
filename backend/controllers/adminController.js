@@ -81,6 +81,14 @@ const getDashboardStats = async (req, res) => {
       LIMIT 6
     `);
 
+    // 6. Statistik Ulasan & Rating
+    const reviewsStatsResult = await query(`
+      SELECT 
+        COUNT(*)::int AS total_reviews,
+        COALESCE(ROUND(AVG(rating)::numeric, 1), 5.0) AS average_rating
+      FROM reviews
+    `);
+
     return res.status(200).json({
       status: 'SUCCESS',
       message: 'Statistik dashboard admin berhasil diambil.',
@@ -110,6 +118,10 @@ const getDashboardStats = async (req, res) => {
         },
         guests: {
           total_registered: parseInt(guestsCountResult.rows[0].total_guests, 10),
+        },
+        reviews: {
+          total: parseInt(reviewsStatsResult.rows[0].total_reviews, 10),
+          average_rating: parseFloat(reviewsStatsResult.rows[0].average_rating),
         },
         recent_bookings: recentBookingsResult.rows,
       },
@@ -653,6 +665,69 @@ const updateRestaurantBookingStatus = async (req, res) => {
   }
 };
 
+/**
+ * 12. GET /api/v1/admin/reviews
+ * Mengambil seluruh ulasan & rating hotel dengan data lengkap
+ */
+const getAllReviewsAdmin = async (req, res) => {
+  try {
+    const sql = `
+      SELECT 
+        r.id,
+        r.rating,
+        r.comment,
+        r.created_at,
+        u.id AS user_id,
+        u.full_name AS guest_name,
+        u.email AS guest_email,
+        u.status AS guest_status,
+        b.booking_code,
+        rt.name AS room_type_name
+      FROM reviews r
+      JOIN users u ON r.user_id = u.id
+      LEFT JOIN bookings b ON r.booking_id = b.id
+      LEFT JOIN rooms rm ON b.room_id = rm.id
+      LEFT JOIN room_types rt ON rm.room_type_id = rt.id
+      ORDER BY r.created_at DESC;
+    `;
+    const result = await query(sql);
+
+    return res.status(200).json({
+      status: 'SUCCESS',
+      message: 'Seluruh ulasan tamu berhasil dimuat.',
+      data: {
+        reviews: result.rows,
+      },
+    });
+  } catch (error) {
+    console.error('❌ Admin getAllReviewsAdmin Error:', error.message);
+    return res.status(500).json({ status: 'ERROR', message: 'Gagal memuat ulasan.' });
+  }
+};
+
+/**
+ * 13. DELETE /api/v1/admin/reviews/:id
+ * Menghapus ulasan oleh Admin (misal karena spam / ujaran kebencian)
+ */
+const deleteReviewAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleteRes = await query('DELETE FROM reviews WHERE id::text = $1 RETURNING id', [id]);
+
+    if (deleteRes.rowCount === 0) {
+      return res.status(404).json({ status: 'ERROR', message: 'Ulasan tidak ditemukan.' });
+    }
+
+    return res.status(200).json({
+      status: 'SUCCESS',
+      message: 'Ulasan tamu berhasil dihapus oleh admin.',
+    });
+  } catch (error) {
+    console.error('❌ Admin deleteReviewAdmin Error:', error.message);
+    return res.status(500).json({ status: 'ERROR', message: 'Gagal menghapus ulasan.' });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getAllBookings,
@@ -665,4 +740,6 @@ module.exports = {
   resetGuestPassword,
   getAllRestaurantBookings,
   updateRestaurantBookingStatus,
+  getAllReviewsAdmin,
+  deleteReviewAdmin,
 };

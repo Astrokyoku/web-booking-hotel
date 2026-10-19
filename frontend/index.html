@@ -170,55 +170,38 @@
   <!-- ============================================================
        5. GUEST REVIEWS SECTION
        ============================================================ -->
+  <!-- ============================================================
+       5. GUEST REVIEWS SECTION
+       ============================================================ -->
   <section id="reviews" class="section-reviews">
     <div class="container">
-      <div style="text-align: center;">
-        <span class="section-tag">Testimoni Tamu</span>
-        <h2 class="section-title">Apa Kata Mereka Tentang Kami</h2>
-        <p class="section-desc">Pengalaman nyata dari para tamu istimewa yang telah menikmati kemewahan LUXURY Hotel.</p>
+      <div style="text-align: center; max-width: 720px; margin: 0 auto 36px;">
+        <span class="section-tag">Testimoni & Penilaian Tamu</span>
+        <h2 class="section-title">Apa Kata Mereka Tentang LUXURY Hotel</h2>
+        <p class="section-desc">Pengalaman nyata dari para tamu istimewa yang telah menikmati kemewahan dan keramahtamahan bintang 5 kami.</p>
+
+        <!-- Rating Summary Bar & CTA -->
+        <div class="reviews-summary-bar">
+          <div class="review-score-box">
+            <span class="score-number" id="reviewAvgRating">5.0</span>
+            <div>
+              <div class="score-stars" id="reviewAvgStars">
+                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+              </div>
+              <span class="score-count" id="reviewTotalCount">Memuat ulasan tamu...</span>
+            </div>
+          </div>
+          <button class="btn btn-gold btn-write-review" onclick="openReviewModal()">
+            <i class="fa-solid fa-pen-to-square"></i> Beri Rating & Ulasan
+          </button>
+        </div>
       </div>
 
-      <div class="reviews-grid">
-        <div class="review-card">
-          <div class="review-stars">
-            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-          </div>
-          <p class="review-quote">"Pengalaman menginap terbaik sepanjang masa! Suite Room sangat luas, kasur sangat empuk, dan pemandangan sunset dari balkon benar-benar tak ternilai."</p>
-          <div class="reviewer-info">
-            <div class="reviewer-avatar">BS</div>
-            <div>
-              <div class="reviewer-name">Budi Santoso</div>
-              <div class="reviewer-role">Verified Guest • Jakarta</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="review-card">
-          <div class="review-stars">
-            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-          </div>
-          <p class="review-quote">"Pelayanan staf sangat luar biasa ramah dan cepat tanggap. Breakfast di restoran bintang 5 mereka menyajikan menu yang sangat lezat dan variatif."</p>
-          <div class="reviewer-info">
-            <div class="reviewer-avatar">SA</div>
-            <div>
-              <div class="reviewer-name">Siti Aisyah</div>
-              <div class="reviewer-role">Verified Guest • Surabaya</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="review-card">
-          <div class="review-stars">
-            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-          </div>
-          <p class="review-quote">"Sistem bookingnya sangat cepat, kalkulasi pajaknya transparan, dan begitu tiba di hotel kamar sudah siap tanpa antre lama. Pasti akan kembali lagi!"</p>
-          <div class="reviewer-info">
-            <div class="reviewer-avatar">RP</div>
-            <div>
-              <div class="reviewer-name">Reza Pratama</div>
-              <div class="reviewer-role">Verified Guest • Bali</div>
-            </div>
-          </div>
+      <!-- Dynamic Reviews Grid -->
+      <div class="reviews-grid" id="reviewsGrid">
+        <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-secondary);">
+          <i class="fa-solid fa-spinner fa-spin text-gold" style="font-size: 1.5rem; margin-bottom: 10px;"></i>
+          <p>Memuat ulasan dan penilaian tamu...</p>
         </div>
       </div>
     </div>
@@ -502,6 +485,70 @@
         <div id="myBookingsList" style="display: flex; flex-direction: column; gap: 16px;">
           <!-- Populated by JS -->
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- F. HOTEL REVIEW & RATING MODAL (Tamu Memberi Nilai & Komen) -->
+  <div class="modal-overlay" id="reviewModal">
+    <div class="modal-content" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3 class="modal-title font-serif">Beri Penilaian & Ulasan Hotel</h3>
+        <button class="modal-close" onclick="closeModal('reviewModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="hotelReviewForm" onsubmit="handleReviewSubmit(event)">
+          <input type="hidden" id="reviewBookingId" value="">
+          <input type="hidden" id="reviewRatingValue" value="5">
+
+          <!-- Notice Booking jika dikaitkan dari reservasi -->
+          <div id="reviewBookingNotice" style="display: none; background: rgba(212,175,55,0.1); border: 1px solid var(--gold-border); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 20px; font-size: 0.9rem; color: var(--gold-light);">
+            <i class="fa-solid fa-hotel"></i> <span id="reviewBookingNoticeText">Ulasan Reservasi</span>
+          </div>
+
+          <!-- Opsi Pilih Pengalaman / Reservasi -->
+          <div class="form-group" id="reviewBookingSelectGroup" style="margin-bottom: 20px;">
+            <label class="form-label"><i class="fa-solid fa-receipt text-gold"></i> Hubungkan dengan Reservasi (Opsional)</label>
+            <select id="reviewBookingSelect" class="form-control" onchange="onReviewBookingSelectChange()">
+              <option value="">Ulasan Umum Hotel & Pelayanan</option>
+            </select>
+          </div>
+
+          <!-- Star Rating Interactive Selector -->
+          <div class="form-group" style="text-align: center; margin-bottom: 24px; background: var(--bg-surface-elevated); padding: 20px; border-radius: var(--radius-sm); border: 1px solid var(--gold-border);">
+            <label class="form-label" style="display: block; font-size: 0.95rem; margin-bottom: 12px; font-weight: 600;">
+              Seberapa Puas Anda dengan LUXURY Hotel?
+            </label>
+            <div class="interactive-star-rating" id="starRatingContainer">
+              <i class="fa-solid fa-star star-btn active" data-rating="1" onclick="selectStarRating(1)" onmouseover="hoverStarRating(1)" onmouseout="resetStarRatingHover()"></i>
+              <i class="fa-solid fa-star star-btn active" data-rating="2" onclick="selectStarRating(2)" onmouseover="hoverStarRating(2)" onmouseout="resetStarRatingHover()"></i>
+              <i class="fa-solid fa-star star-btn active" data-rating="3" onclick="selectStarRating(3)" onmouseover="hoverStarRating(3)" onmouseout="resetStarRatingHover()"></i>
+              <i class="fa-solid fa-star star-btn active" data-rating="4" onclick="selectStarRating(4)" onmouseover="hoverStarRating(4)" onmouseout="resetStarRatingHover()"></i>
+              <i class="fa-solid fa-star star-btn active" data-rating="5" onclick="selectStarRating(5)" onmouseover="hoverStarRating(5)" onmouseout="resetStarRatingHover()"></i>
+            </div>
+            <div id="starRatingLabel" style="margin-top: 10px; font-weight: 700; color: var(--gold-primary); font-size: 0.95rem;">
+              ⭐⭐⭐⭐⭐ 5 / 5 - Luar Biasa & Mewah!
+            </div>
+          </div>
+
+          <!-- Comment Textarea -->
+          <div class="form-group" style="margin-bottom: 24px;">
+            <label class="form-label"><i class="fa-solid fa-comment-dots text-gold"></i> Komentar & Kesan Anda</label>
+            <textarea id="reviewCommentText" class="form-control" rows="4" placeholder="Ceritakan pengalaman Anda mengenai kenyamanan kamar, fasilitas, kebersihan, keramahan staf, makanan, atau suasana hotel..." required minlength="3"></textarea>
+            <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 6px;">
+              Ulasan Anda akan dipublikasikan dan membantu calon tamu lainnya.
+            </span>
+          </div>
+
+          <div style="display: flex; gap: 12px;">
+            <button type="submit" class="btn btn-gold" style="flex: 2;" id="btnSubmitReview">
+              <i class="fa-solid fa-paper-plane"></i> Kirim Ulasan
+            </button>
+            <button type="button" class="btn btn-glass" style="flex: 1;" onclick="closeModal('reviewModal')">
+              Batal
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

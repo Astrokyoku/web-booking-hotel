@@ -58,6 +58,10 @@
         <i class="fa-solid fa-users"></i>
         <span>Direktori Tamu</span>
       </li>
+      <li class="sidebar-item" onclick="switchAdminTab('reviews')" id="menu-reviews">
+        <i class="fa-solid fa-star"></i>
+        <span>Ulasan & Rating</span>
+      </li>
 
       <div class="menu-category-title" style="margin-top: 10px;">Navigasi Publik</div>
       <a href="index.html" class="sidebar-item" target="_blank">
@@ -149,6 +153,15 @@
             <div class="kpi-label">Check-in Hari Ini</div>
             <div class="kpi-value" id="kpiTodayCheckins">0</div>
             <div class="kpi-subtext" id="kpiTodayCheckouts">0 check-out dijadwalkan</div>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon"><i class="fa-solid fa-star text-gold"></i></div>
+          <div class="kpi-details">
+            <div class="kpi-label">Rating Kepuasan</div>
+            <div class="kpi-value" id="kpiAvgRating">5.0 ★</div>
+            <div class="kpi-subtext" id="kpiTotalReviews">0 ulasan tamu</div>
           </div>
         </div>
       </div>
@@ -348,6 +361,52 @@
               <tr>
                 <td colspan="8" style="text-align: center; padding: 30px;">
                   <i class="fa-solid fa-spinner fa-spin text-gold"></i> Memuat data tamu...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         TAB 6: ULASAN & RATING TAMU
+         ============================================================ -->
+    <section class="tab-pane" id="pane-reviews">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div>
+            <h3 class="admin-card-title">Daftar Penilaian & Ulasan Tamu</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">Seluruh rating bintang dan pengalaman yang dibagikan oleh tamu hotel.</p>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <select class="form-control" id="filterRatingSelect" style="width: auto; padding: 6px 12px; font-size: 0.85rem;" onchange="handleFilterReviews()">
+              <option value="all">Semua Bintang</option>
+              <option value="5">5 Bintang ⭐⭐⭐⭐⭐</option>
+              <option value="4">4 Bintang ⭐⭐⭐⭐</option>
+              <option value="3">3 Bintang ⭐⭐⭐</option>
+              <option value="2">2 Bintang ⭐⭐</option>
+              <option value="1">1 Bintang ⭐</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Nama Tamu</th>
+                <th>Nilai Rating</th>
+                <th>Komentar & Ulasan</th>
+                <th>Kaitan Reservasi</th>
+                <th>Tanggal</th>
+                <th style="text-align: right;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="reviewsTableBody">
+              <tr>
+                <td colspan="6" style="text-align: center; padding: 30px;">
+                  <i class="fa-solid fa-spinner fa-spin text-gold"></i> Memuat data ulasan...
                 </td>
               </tr>
             </tbody>

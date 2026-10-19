@@ -155,6 +155,7 @@ function switchAdminTab(tabId) {
     restaurant_bookings: { title: 'Reservasi Restoran', sub: 'Kelola pemesanan meja dan status kedatangan tamu di restoran.' },
     rooms: { title: 'Inventori Kamar', sub: 'Pantau ketersediaan kamar, kamar terisi, dan atur status pemeliharaan (maintenance).' },
     guests: { title: 'Direktori Tamu', sub: 'Daftar seluruh tamu yang memiliki akun di LUXURY Hotel & Resort.' },
+    reviews: { title: 'Ulasan & Rating Tamu', sub: 'Pantau nilai kepuasan tamu dan kelola seluruh ulasan hotel.' },
   };
 
   if (titles[tabId]) {
@@ -168,6 +169,7 @@ function switchAdminTab(tabId) {
   else if (tabId === 'restaurant_bookings') loadRestaurantBookings();
   else if (tabId === 'rooms') loadRooms();
   else if (tabId === 'guests') loadGuests();
+  else if (tabId === 'reviews') loadAdminReviews();
 }
 
 function refreshCurrentTab() {
@@ -197,6 +199,11 @@ async function loadDashboardStats() {
     document.getElementById('kpiPendingBookings').innerText = `${s.bookings.pending} booking pending konfirmasi`;
     document.getElementById('kpiTodayCheckins').innerText = s.bookings.today_checkins;
     document.getElementById('kpiTodayCheckouts').innerText = `${s.bookings.today_checkouts} check-out dijadwalkan`;
+
+    if (s.reviews && document.getElementById('kpiAvgRating')) {
+      document.getElementById('kpiAvgRating').innerText = `${s.reviews.average_rating} ★`;
+      document.getElementById('kpiTotalReviews').innerText = `${s.reviews.total} ulasan tamu`;
+    }
 
     // Render Recent Bookings Table
     const tbody = document.getElementById('recentBookingsTableBody');
@@ -780,4 +787,114 @@ async function saveTableNumber(id) {
   } catch (err) {
     showToast(err.message, 'error');
   }
+}
+
+// ============================================================
+// 8. TAB 6: ULASAN & RATING TAMU (MODERASI ADMIN)
+// ============================================================
+let allAdminReviews = [];
+
+async function loadAdminReviews() {
+  const tbody = document.getElementById('reviewsTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px;"><i class="fa-solid fa-spinner fa-spin text-gold"></i> Memuat data ulasan...</td></tr>';
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/reviews`, {
+      headers: { 'Authorization': `Bearer ${adminState.token}` },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+
+    allAdminReviews = data.data.reviews || [];
+    renderAdminReviewsTable(allAdminReviews);
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--accent-rose); padding: 20px;">Gagal memuat ulasan: ${err.message}</td></tr>`;
+  }
+}
+
+function renderAdminReviewsTable(reviews) {
+  const tbody = document.getElementById('reviewsTableBody');
+  if (!tbody) return;
+  if (!reviews || reviews.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--text-secondary);">Tidak ada ulasan tamu yang ditemukan.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = reviews.map(r => {
+    const stars = Array.from({ length: 5 }, (_, i) => 
+      `<i class="fa-${i < r.rating ? 'solid' : 'regular'} fa-star text-gold"></i>`
+    ).join('');
+
+    const dateStr = new Date(r.created_at).toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+
+    const bookingBadge = r.booking_code
+      ? `<span class="badge" style="background: rgba(212,175,55,0.15); color: var(--gold-light);"><i class="fa-solid fa-bed"></i> #${r.booking_code} (${r.room_type_name || 'Kamar'})</span>`
+      : '<span style="color: var(--text-muted); font-size: 0.85rem;">Ulasan Umum Hotel</span>';
+
+    return `
+      <tr>
+        <td>
+          <div style="font-weight: 600; color: #fff;">${escapeHtml(r.guest_name || 'Tamu')}</div>
+          <div style="font-size: 0.8rem; color: var(--text-muted);">${escapeHtml(r.guest_email || '')}</div>
+        </td>
+        <td>
+          <div style="font-size: 0.95rem; white-space: nowrap;">${stars}</div>
+          <span style="font-size: 0.75rem; color: var(--gold-light); font-weight: 600;">${r.rating} / 5 Bintang</span>
+        </td>
+        <td style="max-width: 320px; line-height: 1.5; font-size: 0.9rem;">
+          "${escapeHtml(r.comment || '')}"
+        </td>
+        <td>${bookingBadge}</td>
+        <td style="font-size: 0.85rem; color: var(--text-secondary);">${dateStr}</td>
+        <td style="text-align: right;">
+          <button class="btn btn-outline-danger btn-sm" onclick="handleAdminDeleteReview('${r.id}')" title="Hapus Ulasan (Moderasi)">
+            <i class="fa-solid fa-trash-can"></i> Hapus
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function handleFilterReviews() {
+  const ratingFilter = document.getElementById('filterRatingSelect')?.value;
+  let filtered = [...allAdminReviews];
+
+  if (ratingFilter && ratingFilter !== 'all') {
+    filtered = filtered.filter(r => r.rating === parseInt(ratingFilter, 10));
+  }
+
+  renderAdminReviewsTable(filtered);
+}
+
+async function handleAdminDeleteReview(reviewId) {
+  if (!confirm('Apakah Anda yakin ingin menghapus ulasan ini secara permanen dari sistem?')) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/reviews/${reviewId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${adminState.token}` },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+
+    showToast(data.message || 'Ulasan berhasil dihapus oleh admin.', 'success');
+    loadAdminReviews();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
