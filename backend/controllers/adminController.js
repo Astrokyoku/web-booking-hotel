@@ -199,7 +199,7 @@ const getAllBookings = async (req, res) => {
         b.total_nights,
         b.total_price,
         b.status AS booking_status,
-        b.special_request,
+        b.special_requests,
         COALESCE(p.id, NULL) AS payment_id,
         COALESCE(p.status, 'unpaid') AS payment_status,
         COALESCE(p.payment_method, '-') AS payment_method,

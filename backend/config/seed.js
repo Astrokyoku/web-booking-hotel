@@ -210,7 +210,7 @@ const seedDatabase = async () => {
 
     // Booking 1: Budi memesan Standard Room 101
     const booking1 = await client.query(
-      `INSERT INTO bookings (booking_code, user_id, room_id, check_in_date, check_out_date, total_nights, total_price, status, special_request)
+      `INSERT INTO bookings (booking_code, user_id, room_id, check_in_date, check_out_date, total_nights, total_price, status, special_requests)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id, booking_code, status`,
       [
         'HTL-20260810-001',
