@@ -61,6 +61,75 @@
     </div>
   </section>
 
+  <!-- A. AUTH MODAL (Login / Register) -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title font-serif" id="authModalTitle">Masuk ke Akun Anda</h3>
+        <button class="modal-close" onclick="closeModal('authModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="auth-tabs">
+          <button class="auth-tab-btn active" id="tabLoginBtn" onclick="switchAuthTab('login')">Masuk</button>
+          <button class="auth-tab-btn" id="tabRegisterBtn" onclick="switchAuthTab('register')">Daftar Baru</button>
+        </div>
+
+        <!-- Form Login -->
+        <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label"><i class="fa-solid fa-envelope"></i> Alamat Email</label>
+            <input type="email" id="loginEmail" class="form-control" placeholder="contoh: budi@gmail.com" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 24px;">
+            <label class="form-label"><i class="fa-solid fa-key"></i> Kata Sandi</label>
+            <input type="password" id="loginPassword" class="form-control" placeholder="Masukkan kata sandi" required>
+          </div>
+          <button type="submit" class="btn btn-gold btn-block" id="loginSubmitBtn">
+            <i class="fa-solid fa-right-to-bracket"></i> Masuk Sekarang
+          </button>
+        </form>
+
+        <!-- Form Register -->
+        <form id="registerForm" style="display: none;" onsubmit="handleRegisterSubmit(event)">
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label"><i class="fa-solid fa-user"></i> Nama Lengkap</label>
+            <input type="text" id="regFullName" class="form-control" placeholder="Nama lengkap Anda" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label"><i class="fa-solid fa-envelope"></i> Alamat Email</label>
+            <input type="email" id="regEmail" class="form-control" placeholder="contoh: budi@gmail.com" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label"><i class="fa-solid fa-phone"></i> Nomor Telepon / WhatsApp</label>
+            <input type="tel" id="regPhone" class="form-control" placeholder="contoh: 08123456789">
+          </div>
+          <div class="form-group" style="margin-bottom: 24px;">
+            <label class="form-label"><i class="fa-solid fa-key"></i> Kata Sandi (Min. 6 Karakter)</label>
+            <input type="password" id="regPassword" class="form-control" placeholder="Buat kata sandi aman" minlength="6" required>
+          </div>
+          <button type="submit" class="btn btn-gold btn-block" id="registerSubmitBtn">
+            <i class="fa-solid fa-user-plus"></i> Buat Akun Baru
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- B. MY BOOKINGS MODAL (Riwayat Tamu) -->
+  <div class="modal-overlay" id="myBookingsModal">
+    <div class="modal-content" style="max-width: 760px;">
+      <div class="modal-header">
+        <h3 class="modal-title font-serif">Riwayat Reservasi Saya</h3>
+        <button class="modal-close" onclick="closeModal('myBookingsModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="myBookingsList" style="display: flex; flex-direction: column; gap: 16px;">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Modals & Scripts -->
   <div id="toastContainer" class="toast-container"></div>
   <script src="assets/js/app.js"></script>

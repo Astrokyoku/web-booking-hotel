@@ -110,7 +110,7 @@ function updateAuthUI() {
         <button class="btn btn-glass btn-sm" onclick="openMyBookingsModal()">
           <i class="fa-solid fa-receipt text-gold"></i> Reservasi Saya
         </button>
-        <div class="user-badge" onclick="toggleUserMenu()" id="userBadgeBtn">
+        <div class="user-badge" onclick="toggleUserMenu()" id="userBadgeBtn" style="cursor: pointer;">
           <div class="user-avatar">${initials}</div>
           <span style="font-weight: 600; font-size: 0.9rem;">${state.user.full_name.split(' ')[0]}</span>
           <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem; color: var(--gold-primary);"></i>
@@ -129,30 +129,110 @@ function updateAuthUI() {
   }
 }
 
+/**
+ * Toggle menu dropdown user atau buka riwayat reservasi
+ */
+function toggleUserMenu() {
+  openMyBookingsModal();
+}
+
+/**
+ * Memastikan elemen Auth Modal (Login / Register) ada di DOM sebelum dibuka
+ */
+function ensureAuthModalExists() {
+  if (document.getElementById('authModal')) return;
+
+  const modalHtml = `
+  <div class="modal-overlay" id="authModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title font-serif" id="authModalTitle">Masuk ke Akun Anda</h3>
+        <button class="modal-close" onclick="closeModal('authModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="auth-tabs">
+          <button class="auth-tab-btn active" id="tabLoginBtn" onclick="switchAuthTab('login')">Masuk</button>
+          <button class="auth-tab-btn" id="tabRegisterBtn" onclick="switchAuthTab('register')">Daftar Baru</button>
+        </div>
+
+        <!-- Form Login -->
+        <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label"><i class="fa-solid fa-envelope"></i> Alamat Email</label>
+            <input type="email" id="loginEmail" class="form-control" placeholder="contoh: budi@gmail.com" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 24px;">
+            <label class="form-label"><i class="fa-solid fa-key"></i> Kata Sandi</label>
+            <input type="password" id="loginPassword" class="form-control" placeholder="Masukkan kata sandi" required>
+          </div>
+          <button type="submit" class="btn btn-gold btn-block" id="loginSubmitBtn">
+            <i class="fa-solid fa-right-to-bracket"></i> Masuk Sekarang
+          </button>
+        </form>
+
+        <!-- Form Register -->
+        <form id="registerForm" style="display: none;" onsubmit="handleRegisterSubmit(event)">
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label"><i class="fa-solid fa-user"></i> Nama Lengkap</label>
+            <input type="text" id="regFullName" class="form-control" placeholder="Nama lengkap Anda" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label"><i class="fa-solid fa-envelope"></i> Alamat Email</label>
+            <input type="email" id="regEmail" class="form-control" placeholder="contoh: budi@gmail.com" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label"><i class="fa-solid fa-phone"></i> Nomor Telepon / WhatsApp</label>
+            <input type="tel" id="regPhone" class="form-control" placeholder="contoh: 08123456789">
+          </div>
+          <div class="form-group" style="margin-bottom: 24px;">
+            <label class="form-label"><i class="fa-solid fa-key"></i> Kata Sandi (Min. 6 Karakter)</label>
+            <input type="password" id="regPassword" class="form-control" placeholder="Buat kata sandi aman" minlength="6" required>
+          </div>
+          <button type="submit" class="btn btn-gold btn-block" id="registerSubmitBtn">
+            <i class="fa-solid fa-user-plus"></i> Buat Akun Baru
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+  const newOverlay = document.getElementById('authModal');
+  if (newOverlay) {
+    newOverlay.addEventListener('click', (e) => {
+      if (e.target === newOverlay) newOverlay.classList.remove('active');
+    });
+  }
+}
+
 function openAuthModal(tab = 'login') {
+  ensureAuthModalExists();
   switchAuthTab(tab);
   openModal('authModal');
 }
 
 function switchAuthTab(tab) {
+  ensureAuthModalExists();
   const tabLoginBtn = document.getElementById('tabLoginBtn');
   const tabRegBtn = document.getElementById('tabRegisterBtn');
   const loginForm = document.getElementById('loginForm');
   const regForm = document.getElementById('registerForm');
   const modalTitle = document.getElementById('authModalTitle');
 
+  if (!tabLoginBtn || !tabRegBtn || !loginForm || !regForm) return;
+
   if (tab === 'login') {
     tabLoginBtn.classList.add('active');
     tabRegBtn.classList.remove('active');
     loginForm.style.display = 'block';
     regForm.style.display = 'none';
-    modalTitle.innerText = 'Masuk ke Akun Anda';
+    if (modalTitle) modalTitle.innerText = 'Masuk ke Akun Anda';
   } else {
     tabRegBtn.classList.add('active');
     tabLoginBtn.classList.remove('active');
     regForm.style.display = 'block';
     loginForm.style.display = 'none';
-    modalTitle.innerText = 'Daftar Akun Tamu Baru';
+    if (modalTitle) modalTitle.innerText = 'Daftar Akun Tamu Baru';
   }
 }
 
@@ -249,6 +329,7 @@ function handleLogout() {
  */
 async function fetchRooms() {
   const container = document.getElementById('roomsContainer');
+  if (!container) return; // Halaman tidak memiliki container kamar (seperti fasilitas, resto, mice)
 
   try {
     const res = await fetch(`${API_BASE}/rooms`);
@@ -260,13 +341,15 @@ async function fetchRooms() {
     renderRoomCards(state.rooms);
   } catch (err) {
     console.error('Fetch rooms error:', err);
-    container.innerHTML = `
-      <div style="text-align: center; grid-column: 1/-1; padding: 40px;">
-        <i class="fa-solid fa-triangle-exclamation text-gold" style="font-size: 2rem;"></i>
-        <p style="margin-top: 12px; color: var(--text-secondary);">Gagal memuat katalog kamar: ${err.message}</p>
-        <button class="btn btn-outline-gold btn-sm" onclick="fetchRooms()" style="margin-top: 16px;">Coba Lagi</button>
-      </div>
-    `;
+    if (container) {
+      container.innerHTML = `
+        <div style="text-align: center; grid-column: 1/-1; padding: 40px;">
+          <i class="fa-solid fa-triangle-exclamation text-gold" style="font-size: 2rem;"></i>
+          <p style="margin-top: 12px; color: var(--text-secondary);">Gagal memuat katalog kamar: ${err.message}</p>
+          <button class="btn btn-outline-gold btn-sm" onclick="fetchRooms()" style="margin-top: 16px;">Coba Lagi</button>
+        </div>
+      `;
+    }
   }
 }
 
@@ -276,6 +359,8 @@ async function fetchRooms() {
 function renderRoomCards(rooms, isSearch = false, searchQuery = null) {
   const container = document.getElementById('roomsContainer');
   const subtitle = document.getElementById('roomsSubtitle');
+
+  if (!container) return;
 
   if (!rooms || rooms.length === 0) {
     container.innerHTML = `
@@ -291,10 +376,12 @@ function renderRoomCards(rooms, isSearch = false, searchQuery = null) {
     return;
   }
 
-  if (isSearch && searchQuery) {
-    subtitle.innerHTML = `Menampilkan <strong>${rooms.length} tipe kamar</strong> yang tersedia untuk periode <strong>${searchQuery.check_in} s/d ${searchQuery.check_out}</strong> (${searchQuery.total_nights} malam). Rincian termasuk <strong>Pajak Hotel 12%</strong>.`;
-  } else {
-    subtitle.innerText = 'Pilihan akomodasi mewah dengan fasilitas modern berstandar internasional dan pemandangan luar biasa.';
+  if (subtitle) {
+    if (isSearch && searchQuery) {
+      subtitle.innerHTML = `Menampilkan <strong>${rooms.length} tipe kamar</strong> yang tersedia untuk periode <strong>${searchQuery.check_in} s/d ${searchQuery.check_out}</strong> (${searchQuery.total_nights} malam). Rincian termasuk <strong>Pajak Hotel 12%</strong>.`;
+    } else {
+      subtitle.innerText = 'Pilihan akomodasi mewah dengan fasilitas modern berstandar internasional dan pemandangan luar biasa.';
+    }
   }
 
   container.innerHTML = rooms.map(room => {
@@ -785,6 +872,36 @@ async function handleCancelBooking(bookingId) {
 // ============================================================
 
 /**
+ * Memastikan elemen Modal Riwayat Pemesanan Tamu ada di DOM
+ */
+function ensureMyBookingsModalExists() {
+  if (document.getElementById('myBookingsModal')) return;
+
+  const modalHtml = `
+  <div class="modal-overlay" id="myBookingsModal">
+    <div class="modal-content" style="max-width: 760px;">
+      <div class="modal-header">
+        <h3 class="modal-title font-serif">Riwayat Reservasi Saya</h3>
+        <button class="modal-close" onclick="closeModal('myBookingsModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="myBookingsList" style="display: flex; flex-direction: column; gap: 16px;">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+  const newOverlay = document.getElementById('myBookingsModal');
+  if (newOverlay) {
+    newOverlay.addEventListener('click', (e) => {
+      if (e.target === newOverlay) newOverlay.classList.remove('active');
+    });
+  }
+}
+
+/**
  * Membuka Modal Riwayat Pemesanan Tamu
  */
 async function openMyBookingsModal() {
@@ -793,20 +910,30 @@ async function openMyBookingsModal() {
     return;
   }
 
+  ensureMyBookingsModalExists();
+
   const listContainer = document.getElementById('myBookingsList');
+  if (!listContainer) return;
+
   listContainer.innerHTML = `<div style="text-align: center; padding: 20px;"><i class="fa-solid fa-spinner fa-spin text-gold"></i> Memuat riwayat...</div>`;
   openModal('myBookingsModal');
 
   try {
-    const resRooms = await fetch(`${API_BASE}/bookings/my-bookings`, {
-      headers: { 'Authorization': `Bearer ${state.token}` },
-    });
-    const resRest = await fetch(`${API_BASE}/services/restaurant/my-bookings`, {
-      headers: { 'Authorization': `Bearer ${state.token}` },
-    });
+    const [resRooms, resRest, resVenues] = await Promise.all([
+      fetch(`${API_BASE}/bookings/my-bookings`, {
+        headers: { 'Authorization': `Bearer ${state.token}` },
+      }),
+      fetch(`${API_BASE}/services/restaurant/my-bookings`, {
+        headers: { 'Authorization': `Bearer ${state.token}` },
+      }),
+      fetch(`${API_BASE}/services/venues/my-bookings`, {
+        headers: { 'Authorization': `Bearer ${state.token}` },
+      }).catch(() => ({ ok: false }))
+    ]);
 
     let roomBookings = [];
     let restBookings = [];
+    let venueBookings = [];
 
     if (resRooms.ok) {
       const dataRooms = await resRooms.json();
@@ -816,8 +943,12 @@ async function openMyBookingsModal() {
       const dataRest = await resRest.json();
       restBookings = dataRest.data.bookings || [];
     }
+    if (resVenues.ok) {
+      const dataVenues = await resVenues.json();
+      venueBookings = dataVenues.data?.bookings || [];
+    }
 
-    if (roomBookings.length === 0 && restBookings.length === 0) {
+    if (roomBookings.length === 0 && restBookings.length === 0 && venueBookings.length === 0) {
       listContainer.innerHTML = `
         <div style="text-align: center; padding: 40px;">
           <i class="fa-solid fa-calendar-xmark text-gold" style="font-size: 2.5rem; margin-bottom: 12px;"></i>
@@ -831,7 +962,7 @@ async function openMyBookingsModal() {
 
     // Render Kamar
     if (roomBookings.length > 0) {
-      html += `<h4 style="color: var(--gold-light); margin-bottom: 10px; border-bottom: 1px solid var(--gold-border); padding-bottom: 5px;">Reservasi Kamar</h4>`;
+      html += `<h4 style="color: var(--gold-light); margin-bottom: 10px; border-bottom: 1px solid var(--gold-border); padding-bottom: 5px;"><i class="fa-solid fa-bed"></i> Reservasi Kamar & Suite</h4>`;
       html += roomBookings.map(b => {
       let badgeClass = 'var(--accent-amber)';
       if (b.booking_status === 'confirmed' || b.booking_status === 'checked_in') badgeClass = 'var(--accent-emerald)';
@@ -890,7 +1021,7 @@ async function openMyBookingsModal() {
 
     // Render Restoran
     if (restBookings.length > 0) {
-      html += `<h4 style="color: var(--gold-light); margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid var(--gold-border); padding-bottom: 5px;">Reservasi Restoran</h4>`;
+      html += `<h4 style="color: var(--gold-light); margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid var(--gold-border); padding-bottom: 5px;"><i class="fa-solid fa-utensils"></i> Reservasi Restoran Angie</h4>`;
       html += restBookings.map(b => {
         let badgeClass = 'var(--accent-amber)';
         if (b.status === 'confirmed') badgeClass = 'var(--accent-emerald)';
@@ -919,6 +1050,43 @@ async function openMyBookingsModal() {
               <button class="btn btn-outline-gold btn-sm" onclick='openRestaurantVoucher(${JSON.stringify(b)})'>
                 <i class="fa-solid fa-file-invoice"></i> Bukti Reservasi
               </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Render Venue / MICE
+    if (venueBookings.length > 0) {
+      html += `<h4 style="color: var(--gold-light); margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid var(--gold-border); padding-bottom: 5px;"><i class="fa-solid fa-handshake"></i> Reservasi MICE & Ballroom</h4>`;
+      html += venueBookings.map(b => {
+        let badgeClass = 'var(--accent-amber)';
+        if (b.status === 'confirmed') badgeClass = 'var(--accent-emerald)';
+        if (b.status === 'completed') badgeClass = 'var(--text-secondary)';
+        if (b.status === 'cancelled') badgeClass = 'var(--accent-rose)';
+
+        const dateStr = new Date(b.event_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        const durLabel = b.duration_type === 'full_day' ? 'Full Day (12 Jam)' : 'Half Day (6 Jam)';
+        
+        return `
+          <div style="background: var(--bg-surface-elevated); border: 1px solid var(--gold-border); border-radius: var(--radius-sm); padding: 18px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; color: var(--gold-light); font-size: 1.05rem;">${b.venue_booking_code}</span>
+              <span style="font-size: 0.75rem; font-weight: 700; color: #fff; background: ${badgeClass}; padding: 2px 10px; border-radius: 12px; text-transform: uppercase;">
+                ${b.status}
+              </span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.85rem; color: var(--text-secondary);">
+              <div><strong>Venue:</strong> ${b.venue_name || 'Grand Ballroom'}</div>
+              <div><strong>Tanggal Acara:</strong> ${dateStr}</div>
+              <div><strong>Durasi:</strong> ${durLabel}</div>
+              <div><strong>Layout:</strong> <span style="text-transform: capitalize;">${b.layout_type}</span> (${b.attendee_count} Orang)</div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08);">
+              <span style="font-weight: 700; color: var(--gold-primary);">Rp ${Number(b.total_price).toLocaleString('id-ID')}</span>
+              <span style="font-size: 0.85rem; color: var(--text-secondary);">Status: ${b.status.toUpperCase()}</span>
             </div>
           </div>
         `;

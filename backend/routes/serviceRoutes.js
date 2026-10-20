@@ -11,7 +11,8 @@ const {
   getMyRestaurantBookings,
   getHotelFacilities,
   getVenues,
-  bookVenue
+  bookVenue,
+  getMyVenueBookings
 } = require('../controllers/serviceController');
 const { authenticate } = require('../middleware/authMiddleware');
 
@@ -25,6 +26,7 @@ router.get('/facilities', getHotelFacilities);
 
 // --- MICE & Ballroom (Venues) ---
 router.get('/venues', getVenues);
+router.get('/venues/my-bookings', authenticate, getMyVenueBookings);
 router.post('/venues/book', authenticate, bookVenue);
 
 module.exports = router;

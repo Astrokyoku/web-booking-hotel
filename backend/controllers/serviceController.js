@@ -182,11 +182,44 @@ const bookVenue = async (req, res) => {
   }
 };
 
+/**
+ * 5b. GET /api/v1/services/venues/my-bookings
+ * Mengambil riwayat reservasi venue milik tamu yang login
+ */
+const getMyVenueBookings = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const result = await query(`
+      SELECT 
+        vb.id, vb.venue_booking_code, vb.event_date, vb.duration_type, 
+        vb.layout_type, vb.attendee_count, vb.total_price, vb.status, vb.special_requests, vb.created_at,
+        v.name as venue_name, v.venue_type,
+        u.full_name as guest_name, u.email as guest_email, u.phone as guest_phone
+      FROM venue_bookings vb
+      JOIN venues v ON vb.venue_id = v.id
+      JOIN users u ON vb.user_id = u.id
+      WHERE vb.user_id = $1
+      ORDER BY vb.event_date DESC, vb.created_at DESC
+    `, [userId]);
+
+    return res.status(200).json({
+      status: 'SUCCESS',
+      message: 'Berhasil mengambil riwayat reservasi venue.',
+      data: { bookings: result.rows }
+    });
+  } catch (error) {
+    console.error('❌ Error getMyVenueBookings:', error.message);
+    return res.status(500).json({ status: 'ERROR', message: 'Gagal memuat riwayat reservasi venue' });
+  }
+};
+
 module.exports = {
   getRestaurantMenus,
   bookRestaurantTable,
   getMyRestaurantBookings,
   getHotelFacilities,
   getVenues,
-  bookVenue
+  bookVenue,
+  getMyVenueBookings
 };
+
