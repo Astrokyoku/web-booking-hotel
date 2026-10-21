@@ -40,10 +40,21 @@ const state = {
 document.addEventListener('DOMContentLoaded', () => {
   initDateInputs();
   initNavbarScroll();
+  ensureMobileNavExists();
   updateAuthUI();
   fetchRooms();
   fetchHotelReviews();
+  initResizeListener();
 });
+
+function initResizeListener() {
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 1024) {
+      closeMobileNav();
+      removeUserDropdown();
+    }
+  });
+}
 
 /**
  * Inisialisasi tanggal default di search bar (Check-in: Hari Ini, Check-out: Besok)
@@ -88,52 +99,225 @@ function initNavbarScroll() {
 // ============================================================
 
 /**
- * Memperbarui Tampilan Navbar berdasarkan status login user
+ * Memperbarui Tampilan Navbar dan Drawer Mobile berdasarkan status login user
  */
 function updateAuthUI() {
+  ensureMobileNavExists();
   const navAuthArea = document.getElementById('navAuthArea');
-  if (!navAuthArea) return;
+  const drawerUserSection = document.getElementById('drawerUserSection');
 
-  if (state.token && state.user) {
-    const initials = state.user.full_name
-      ? state.user.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
-      : 'G';
+  const initials = (state.token && state.user && state.user.full_name)
+    ? state.user.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
+    : 'G';
+  const firstName = (state.token && state.user && state.user.full_name)
+    ? state.user.full_name.split(' ')[0]
+    : 'Tamu';
+  const fullName = (state.token && state.user && state.user.full_name) || 'Tamu';
+  const email = (state.token && state.user && state.user.email) || '';
+  const isAdmin = Boolean(state.token && state.user && state.user.role === 'admin');
 
-    const isAdmin = state.user.role === 'admin';
-    const adminBtn = isAdmin
-      ? `<a href="admin.html" class="btn btn-gold btn-sm" style="box-shadow: 0 0 10px rgba(197, 160, 89, 0.4);" title="Buka Dashboard Admin"><i class="fa-solid fa-crown"></i> Admin Portal</a>`
-      : '';
+  // 1. Render Topbar Nav Auth Area
+  if (navAuthArea) {
+    if (state.token && state.user) {
+      const adminBtn = isAdmin
+        ? `<a href="admin.html" class="btn btn-gold btn-sm nav-admin-btn" title="Buka Dashboard Admin"><i class="fa-solid fa-crown"></i> <span class="nav-btn-text">Admin</span></a>`
+        : '';
 
-    navAuthArea.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 10px;">
-        ${adminBtn}
-        <button class="btn btn-glass btn-sm" onclick="openMyBookingsModal()">
-          <i class="fa-solid fa-receipt text-gold"></i> Reservasi Saya
-        </button>
-        <div class="user-badge" onclick="toggleUserMenu()" id="userBadgeBtn" style="cursor: pointer;">
-          <div class="user-avatar">${initials}</div>
-          <span style="font-weight: 600; font-size: 0.9rem;">${state.user.full_name.split(' ')[0]}</span>
-          <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem; color: var(--gold-primary);"></i>
+      navAuthArea.innerHTML = `
+        <div class="nav-auth-cluster">
+          ${adminBtn}
+          <button class="btn btn-glass btn-sm nav-bookings-btn" onclick="openMyBookingsModal()" title="Reservasi Saya">
+            <i class="fa-solid fa-receipt text-gold"></i> <span class="nav-btn-text">Reservasi Saya</span>
+          </button>
+          <div class="user-badge" onclick="toggleUserMenu()" id="userBadgeBtn" title="Menu Akun: ${fullName}">
+            <div class="user-avatar">${initials}</div>
+            <span class="user-badge-name">${firstName}</span>
+            <i class="fa-solid fa-chevron-down user-badge-caret"></i>
+          </div>
+          <button class="btn btn-outline-danger btn-sm nav-logout-btn" onclick="handleLogout()" title="Keluar dari Akun" aria-label="Keluar">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span class="nav-logout-text">Keluar</span>
+          </button>
         </div>
-        <button class="btn btn-outline-gold btn-sm" onclick="handleLogout()" title="Keluar">
-          <i class="fa-solid fa-right-from-bracket"></i>
+      `;
+    } else {
+      navAuthArea.innerHTML = `
+        <button class="btn btn-outline-gold btn-sm nav-login-btn" onclick="openAuthModal('login')">
+          <i class="fa-solid fa-user-lock"></i> <span class="nav-btn-text">Masuk / Daftar</span>
         </button>
-      </div>
-    `;
-  } else {
-    navAuthArea.innerHTML = `
-      <button class="btn btn-outline-gold btn-sm" onclick="openAuthModal('login')">
-        <i class="fa-solid fa-user-lock"></i> Masuk / Daftar
-      </button>
-    `;
+      `;
+    }
+  }
+
+  // 2. Render Mobile Drawer User Section
+  if (drawerUserSection) {
+    if (state.token && state.user) {
+      drawerUserSection.innerHTML = `
+        <div class="drawer-profile-card">
+          <div class="drawer-avatar">${initials}</div>
+          <div class="drawer-user-info">
+            <div class="drawer-user-name">${fullName}</div>
+            <div class="drawer-user-email">${email}</div>
+            <span class="drawer-role-badge ${isAdmin ? 'admin' : ''}">
+              ${isAdmin ? '<i class="fa-solid fa-crown"></i> Administrator' : '<i class="fa-solid fa-gem"></i> Tamu Terhormat'}
+            </span>
+          </div>
+        </div>
+        <div class="drawer-user-actions">
+          ${isAdmin ? `<a href="admin.html" class="btn btn-gold btn-block" onclick="closeMobileNav()"><i class="fa-solid fa-crown"></i> Portal Admin Hotel</a>` : ''}
+          <button class="btn btn-glass btn-block" onclick="closeMobileNav(); openMyBookingsModal();">
+            <i class="fa-solid fa-receipt text-gold"></i> Riwayat Reservasi Saya
+          </button>
+          <button class="btn btn-danger btn-block drawer-logout-action-btn" onclick="closeMobileNav(); handleLogout();" id="drawerLogoutBtn">
+            <i class="fa-solid fa-right-from-bracket"></i> Keluar dari Akun
+          </button>
+        </div>
+      `;
+    } else {
+      drawerUserSection.innerHTML = `
+        <div class="drawer-guest-card">
+          <p class="drawer-guest-text">Masuk ke akun Anda untuk melihat reservasi, diskon member eksklusif, dan penawaran spesial.</p>
+          <button class="btn btn-gold btn-block" onclick="closeMobileNav(); openAuthModal('login');">
+            <i class="fa-solid fa-user-lock"></i> Masuk / Daftar Akun
+          </button>
+        </div>
+      `;
+    }
   }
 }
 
 /**
- * Toggle menu dropdown user atau buka riwayat reservasi
+ * Toggle menu dropdown user
  */
 function toggleUserMenu() {
-  openMyBookingsModal();
+  const existingDropdown = document.getElementById('userNavDropdown');
+  if (existingDropdown) {
+    existingDropdown.remove();
+    return;
+  }
+
+  const badgeBtn = document.getElementById('userBadgeBtn');
+  if (!badgeBtn || !state.user) return;
+
+  const isAdmin = state.user.role === 'admin';
+  const dropdown = document.createElement('div');
+  dropdown.id = 'userNavDropdown';
+  dropdown.className = 'user-nav-dropdown';
+  dropdown.innerHTML = `
+    <div class="user-dropdown-header">
+      <div class="user-dropdown-name">${state.user.full_name}</div>
+      <div class="user-dropdown-email">${state.user.email}</div>
+      <span class="user-dropdown-badge">${isAdmin ? 'ADMINISTRATOR' : 'GUEST MEMBER'}</span>
+    </div>
+    <div class="user-dropdown-body">
+      ${isAdmin ? `<a href="admin.html" class="user-dropdown-item"><i class="fa-solid fa-crown text-gold"></i> Dashboard Admin</a>` : ''}
+      <button class="user-dropdown-item" onclick="removeUserDropdown(); openMyBookingsModal();">
+        <i class="fa-solid fa-receipt text-gold"></i> Reservasi Saya
+      </button>
+      <button class="user-dropdown-item logout-item" onclick="removeUserDropdown(); handleLogout();">
+        <i class="fa-solid fa-right-from-bracket"></i> Keluar (Logout)
+      </button>
+    </div>
+  `;
+
+  badgeBtn.parentElement.style.position = 'relative';
+  badgeBtn.parentElement.appendChild(dropdown);
+
+  const handleOutsideClick = (e) => {
+    if (!dropdown.contains(e.target) && !badgeBtn.contains(e.target)) {
+      dropdown.remove();
+      document.removeEventListener('click', handleOutsideClick);
+    }
+  };
+  setTimeout(() => document.addEventListener('click', handleOutsideClick), 10);
+}
+
+function removeUserDropdown() {
+  const dd = document.getElementById('userNavDropdown');
+  if (dd) dd.remove();
+}
+
+/**
+ * Memastikan Drawer Navigasi Mobile ada di DOM
+ */
+function ensureMobileNavExists() {
+  if (document.getElementById('mobileNavDrawer')) return;
+
+  const drawerHtml = `
+    <div class="mobile-nav-backdrop" id="mobileNavBackdrop" onclick="closeMobileNav()"></div>
+    <aside class="mobile-nav-drawer" id="mobileNavDrawer" aria-label="Menu Navigasi Mobile">
+      <div class="drawer-header">
+        <a href="index.html" class="brand-logo" onclick="closeMobileNav()">
+          <span class="brand-title">LUXURY</span>
+          <span class="brand-subtitle">HOTEL & RESORT</span>
+        </a>
+        <button class="drawer-close-btn" onclick="closeMobileNav()" aria-label="Tutup Menu">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="drawer-user-section" id="drawerUserSection">
+        <!-- Populated by updateAuthUI() -->
+      </div>
+
+      <ul class="drawer-menu">
+        <li><a href="index.html#rooms" class="drawer-link" onclick="closeMobileNav()"><i class="fa-solid fa-bed text-gold"></i> <span>Kamar & Suite</span></a></li>
+        <li><a href="restaurant.html" class="drawer-link" onclick="closeMobileNav()"><i class="fa-solid fa-utensils text-gold"></i> <span>Restoran Angie</span></a></li>
+        <li><a href="facilities.html" class="drawer-link" onclick="closeMobileNav()"><i class="fa-solid fa-spa text-gold"></i> <span>Fasilitas Mewah</span></a></li>
+        <li><a href="mice.html" class="drawer-link" onclick="closeMobileNav()"><i class="fa-solid fa-handshake text-gold"></i> <span>MICE & Ballroom</span></a></li>
+      </ul>
+
+      <div class="drawer-footer">
+        <div class="drawer-contact-item">
+          <i class="fa-solid fa-phone text-gold"></i>
+          <span>+62 21 555-LUXURY (24/7)</span>
+        </div>
+        <div class="drawer-contact-item">
+          <i class="fa-solid fa-location-dot text-gold"></i>
+          <span>Jl. Pantai Indah Kapuk No. 88, Jakarta</span>
+        </div>
+      </div>
+    </aside>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', drawerHtml);
+}
+
+function toggleMobileNav() {
+  const drawer = document.getElementById('mobileNavDrawer');
+  if (!drawer) {
+    ensureMobileNavExists();
+  }
+  const isCurrentlyOpen = document.getElementById('mobileNavDrawer')?.classList.contains('open');
+  if (isCurrentlyOpen) {
+    closeMobileNav();
+  } else {
+    openMobileNav();
+  }
+}
+
+function openMobileNav() {
+  ensureMobileNavExists();
+  const drawer = document.getElementById('mobileNavDrawer');
+  const backdrop = document.getElementById('mobileNavBackdrop');
+  const hamburger = document.getElementById('mobileNavToggle');
+
+  if (drawer) drawer.classList.add('open');
+  if (backdrop) backdrop.classList.add('open');
+  if (hamburger) hamburger.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  updateAuthUI();
+}
+
+function closeMobileNav() {
+  const drawer = document.getElementById('mobileNavDrawer');
+  const backdrop = document.getElementById('mobileNavBackdrop');
+  const hamburger = document.getElementById('mobileNavToggle');
+
+  if (drawer) drawer.classList.remove('open');
+  if (backdrop) backdrop.classList.remove('open');
+  if (hamburger) hamburger.classList.remove('active');
+  document.body.style.overflow = '';
 }
 
 /**
@@ -312,11 +496,13 @@ async function handleRegisterSubmit(e) {
 }
 
 function handleLogout() {
+  removeUserDropdown();
+  closeMobileNav();
   state.token = null;
   state.user = null;
   localStorage.removeItem('luxury_token');
   localStorage.removeItem('luxury_user');
-  showToast('Anda telah keluar.', 'success');
+  showToast('Anda telah berhasil keluar dari akun.', 'success');
   updateAuthUI();
 }
 

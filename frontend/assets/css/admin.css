@@ -908,3 +908,33 @@ body {
     margin-bottom: 8px;
   }
 }
+
+.admin-topbar-logout-btn {
+  border-color: rgba(239, 68, 68, 0.45);
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.1);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.admin-topbar-logout-btn:hover {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+
+.admin-card {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.admin-table {
+  min-width: 620px;
+}
+
+@media (max-width: 480px) {
+  .hide-on-mobile-small {
+    display: none !important;
+  }
+}
