@@ -1,0 +1,49 @@
+services:
+  # Service Database PostgreSQL
+  postgres_db:
+    image: postgres:16-alpine
+    container_name: hotel_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-rahasia123}
+      POSTGRES_DB: ${DB_NAME:-hotel_booking_db}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - hotel_net
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-hotel_booking_db}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Service Web Aplikasi (Express + Frontend)
+  hotel_app:
+    build: .
+    container_name: hotel_web_app
+    restart: unless-stopped
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+    environment:
+      PORT: 5000
+      DB_HOST: postgres_db
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-rahasia123}
+      DB_NAME: ${DB_NAME:-hotel_booking_db}
+      JWT_SECRET: ${JWT_SECRET:-kunci_jwt_super_aman_hotel_2026}
+      JWT_EXPIRES_IN: 24h
+    ports:
+      - "5000:5000"
+    networks:
+      - hotel_net
+
+volumes:
+  pgdata:
+    driver: local
+
+networks:
+  hotel_net:
+    driver: bridge
