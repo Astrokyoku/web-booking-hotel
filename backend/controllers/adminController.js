@@ -12,15 +12,31 @@ const { hashPassword } = require('../utils/password');
  */
 const getDashboardStats = async (req, res) => {
   try {
-    // 1. Total Revenue (Total Pendapatan dari transaksi yang 'paid')
+    // 1. Total Revenue (Total Pendapatan dari transaksi yang 'paid' - Kamar, Restoran, & Ballroom)
     const revenueResult = await query(`
+      WITH all_revenue AS (
+        SELECT p.amount, p.paid_at 
+        FROM payments p
+        JOIN bookings b ON p.booking_id = b.id
+        WHERE p.status = 'paid' AND b.status != 'cancelled'
+
+        UNION ALL
+
+        SELECT tr.total_price AS amount, tr.paid_at 
+        FROM table_reservations tr
+        WHERE tr.payment_status = 'paid' AND tr.status != 'cancelled'
+
+        UNION ALL
+
+        SELECT vb.total_price AS amount, vb.paid_at 
+        FROM venue_bookings vb
+        WHERE vb.payment_status = 'paid' AND vb.status != 'cancelled'
+      )
       SELECT 
-        COALESCE(SUM(p.amount), 0) AS total_revenue,
-        COALESCE(SUM(CASE WHEN p.paid_at >= CURRENT_DATE - INTERVAL '30 days' THEN p.amount ELSE 0 END), 0) AS monthly_revenue,
-        COALESCE(SUM(CASE WHEN p.paid_at >= CURRENT_DATE THEN p.amount ELSE 0 END), 0) AS today_revenue
-      FROM payments p
-      JOIN bookings b ON p.booking_id = b.id
-      WHERE p.status = 'paid' AND b.status != 'cancelled'
+        COALESCE(SUM(amount), 0) AS total_revenue,
+        COALESCE(SUM(CASE WHEN paid_at >= CURRENT_DATE - INTERVAL '30 days' THEN amount ELSE 0 END), 0) AS monthly_revenue,
+        COALESCE(SUM(CASE WHEN paid_at >= CURRENT_DATE THEN amount ELSE 0 END), 0) AS today_revenue
+      FROM all_revenue
     `);
 
     // 2. Statistik Reservasi
@@ -302,6 +318,11 @@ const updateBookingStatus = async (req, res) => {
     } else if (status === 'confirmed') {
       // Konfirmasi booking
       await client.query(`UPDATE rooms SET status = 'available' WHERE id = $1`, [roomId]);
+      await client.query(`
+        UPDATE payments 
+        SET status = 'paid', paid_at = COALESCE(paid_at, CURRENT_TIMESTAMP), updated_at = CURRENT_TIMESTAMP 
+        WHERE booking_id = $1 AND status != 'paid'
+      `, [id]);
     }
 
     await client.query('COMMIT');
@@ -594,7 +615,7 @@ const resetGuestPassword = async (req, res) => {
 
 /**
  * 10. GET /api/v1/admin/restaurant-bookings
- * Mengambil semua data reservasi restoran
+ * Mengambil semua data reservasi restoran termasuk informasi pembayaran
  */
 const getAllRestaurantBookings = async (req, res) => {
   try {
@@ -610,6 +631,10 @@ const getAllRestaurantBookings = async (req, res) => {
         tr.guest_count,
         tr.table_number,
         tr.special_requests,
+        tr.total_price,
+        tr.payment_status,
+        tr.payment_method,
+        tr.paid_at,
         tr.status,
         tr.created_at
       FROM table_reservations tr
@@ -630,38 +655,152 @@ const getAllRestaurantBookings = async (req, res) => {
 
 /**
  * 11. PUT /api/v1/admin/restaurant-bookings/:id/status
- * Mengubah status reservasi restoran
+ * Mengubah status reservasi restoran & verifikasi pembayaran
  */
 const updateRestaurantBookingStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, table_number } = req.body;
+    const { status, table_number, payment_status } = req.body;
 
     const validStatuses = ['pending', 'confirmed', 'completed', 'cancelled'];
-    if (!validStatuses.includes(status)) {
+    if (status && !validStatuses.includes(status)) {
       return res.status(400).json({ status: 'ERROR', message: 'Status reservasi tidak valid.' });
+    }
+
+    const currentRes = await query('SELECT * FROM table_reservations WHERE id::text = $1', [id]);
+    if (currentRes.rowCount === 0) {
+      return res.status(404).json({ status: 'ERROR', message: 'Reservasi tidak ditemukan.' });
+    }
+
+    const current = currentRes.rows[0];
+    let newStatus = status || current.status;
+    let newPayStatus = payment_status || current.payment_status;
+    let paidAt = current.paid_at;
+
+    // Jika admin mengonfirmasi reservasi atau verifikasi pembayaran -> otomatis status bayar LUNAS
+    if (newStatus === 'confirmed' && newPayStatus !== 'paid') {
+      newPayStatus = 'paid';
+      paidAt = new Date();
+    } else if (newPayStatus === 'paid' && !paidAt) {
+      paidAt = new Date();
+      if (newStatus === 'pending') {
+        newStatus = 'confirmed';
+      }
     }
 
     const updateQuery = `
       UPDATE table_reservations 
-      SET status = $1, table_number = COALESCE($2, table_number), updated_at = CURRENT_TIMESTAMP
-      WHERE id = $3 
+      SET status = $1, table_number = COALESCE($2, table_number), payment_status = $3, paid_at = $4, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $5 
       RETURNING *
     `;
-    const result = await query(updateQuery, [status, table_number || null, id]);
-
-    if (result.rowCount === 0) {
-      return res.status(404).json({ status: 'ERROR', message: 'Reservasi tidak ditemukan.' });
-    }
+    const result = await query(updateQuery, [newStatus, table_number || null, newPayStatus, paidAt, id]);
 
     return res.status(200).json({
       status: 'SUCCESS',
-      message: `Status reservasi berhasil diubah menjadi ${status}.`,
+      message: `Status reservasi berhasil diubah menjadi ${newStatus}.`,
       data: result.rows[0],
     });
   } catch (error) {
     console.error('❌ Admin updateRestaurantBookingStatus Error:', error.message);
     return res.status(500).json({ status: 'ERROR', message: 'Gagal memperbarui status reservasi restoran.' });
+  }
+};
+
+/**
+ * 11b. GET /api/v1/admin/venue-bookings
+ * Mengambil semua data reservasi ballroom & venue untuk MICE
+ */
+const getAllVenueBookings = async (req, res) => {
+  try {
+    const result = await query(`
+      SELECT 
+        vb.id,
+        vb.venue_booking_code,
+        u.full_name AS guest_name,
+        u.email AS guest_email,
+        u.phone AS guest_phone,
+        v.name AS venue_name,
+        v.venue_type,
+        vb.event_date,
+        vb.duration_type,
+        vb.layout_type,
+        vb.attendee_count,
+        vb.total_price,
+        vb.payment_status,
+        vb.payment_method,
+        vb.paid_at,
+        vb.status,
+        vb.special_requests,
+        vb.created_at
+      FROM venue_bookings vb
+      JOIN users u ON vb.user_id = u.id
+      JOIN venues v ON vb.venue_id = v.id
+      ORDER BY vb.event_date DESC, vb.created_at DESC
+    `);
+
+    return res.status(200).json({
+      status: 'SUCCESS',
+      message: 'Data reservasi venue & ballroom berhasil diambil.',
+      data: result.rows,
+    });
+  } catch (error) {
+    console.error('❌ Admin getAllVenueBookings Error:', error.message);
+    return res.status(500).json({ status: 'ERROR', message: 'Gagal mengambil data reservasi venue.' });
+  }
+};
+
+/**
+ * 11c. PUT /api/v1/admin/venue-bookings/:id/status
+ * Mengubah status reservasi ballroom & venue serta verifikasi pembayaran
+ */
+const updateVenueBookingStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, payment_status } = req.body;
+
+    const validStatuses = ['pending', 'confirmed', 'completed', 'cancelled'];
+    if (status && !validStatuses.includes(status)) {
+      return res.status(400).json({ status: 'ERROR', message: 'Status reservasi tidak valid.' });
+    }
+
+    const currentRes = await query('SELECT * FROM venue_bookings WHERE id::text = $1', [id]);
+    if (currentRes.rowCount === 0) {
+      return res.status(404).json({ status: 'ERROR', message: 'Reservasi venue tidak ditemukan.' });
+    }
+
+    const current = currentRes.rows[0];
+    let newStatus = status || current.status;
+    let newPayStatus = payment_status || current.payment_status;
+    let paidAt = current.paid_at;
+
+    // Jika admin mengonfirmasi reservasi atau verifikasi bayar -> otomatis LUNAS
+    if (newStatus === 'confirmed' && newPayStatus !== 'paid') {
+      newPayStatus = 'paid';
+      paidAt = new Date();
+    } else if (newPayStatus === 'paid' && !paidAt) {
+      paidAt = new Date();
+      if (newStatus === 'pending') {
+        newStatus = 'confirmed';
+      }
+    }
+
+    const updateQuery = `
+      UPDATE venue_bookings 
+      SET status = $1, payment_status = $2, paid_at = $3, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $4 
+      RETURNING *
+    `;
+    const result = await query(updateQuery, [newStatus, newPayStatus, paidAt, id]);
+
+    return res.status(200).json({
+      status: 'SUCCESS',
+      message: `Status reservasi venue berhasil diubah menjadi '${newStatus}'.`,
+      data: result.rows[0],
+    });
+  } catch (error) {
+    console.error('❌ Admin updateVenueBookingStatus Error:', error.message);
+    return res.status(500).json({ status: 'ERROR', message: 'Gagal memperbarui status reservasi venue.' });
   }
 };
 
@@ -740,6 +879,8 @@ module.exports = {
   resetGuestPassword,
   getAllRestaurantBookings,
   updateRestaurantBookingStatus,
+  getAllVenueBookings,
+  updateVenueBookingStatus,
   getAllReviewsAdmin,
   deleteReviewAdmin,
 };

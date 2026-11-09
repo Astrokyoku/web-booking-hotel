@@ -462,33 +462,46 @@ const payBooking = async (req, res, next) => {
       });
     }
 
-    // 1. Update status di tabel payments
+    // 1. Tentukan status pembayaran berdasarkan role & metode
+    // Jika Tamu: transfer/ewallet/kartu masuk 'waiting_verification', khusus cash tetap 'unpaid' (bayar di kasir)
+    // Jika Admin: langsung 'paid' & 'confirmed'
+    const isAdmin = userRole === 'admin';
+    const nextPayStatus = isAdmin ? 'paid' : (payment_method === 'cash' ? 'unpaid' : 'waiting_verification');
+    const nextBookingStatus = isAdmin ? 'confirmed' : booking.status;
+    const nextPaidAt = nextPayStatus === 'paid' ? new Date() : (paymentRecord ? paymentRecord.paid_at : null);
+
     const updatePaymentSql = `
       UPDATE payments 
-      SET status = 'paid', 
-          payment_method = $1, 
-          paid_at = CURRENT_TIMESTAMP, 
+      SET status = $1, 
+          payment_method = $2, 
+          paid_at = $3, 
           updated_at = CURRENT_TIMESTAMP
-      WHERE booking_id = $2
+      WHERE booking_id = $4
       RETURNING *;
     `;
-    const paymentResult = await client.query(updatePaymentSql, [payment_method, booking.id]);
+    const paymentResult = await client.query(updatePaymentSql, [nextPayStatus, payment_method, nextPaidAt, booking.id]);
 
-    // 2. Update status booking menjadi 'confirmed'
+    // 2. Update status booking
     const updateBookingSql = `
       UPDATE bookings 
-      SET status = 'confirmed', 
+      SET status = $1, 
           updated_at = CURRENT_TIMESTAMP
-      WHERE id = $1
+      WHERE id = $2
       RETURNING *;
     `;
-    const bookingResult = await client.query(updateBookingSql, [booking.id]);
+    const bookingResult = await client.query(updateBookingSql, [nextBookingStatus, booking.id]);
 
     await client.query('COMMIT');
 
+    const responseMsg = isAdmin
+      ? '🎉 Pembayaran berhasil diverifikasi! Reservasi sekarang CONFIRMED.'
+      : (payment_method === 'cash'
+          ? '📝 Metode Bayar di Resepsionis tercatat. Silakan lakukan pembayaran saat tiba di hotel untuk verifikasi Admin.'
+          : '⏳ Konfirmasi pembayaran berhasil dikirim! Menunggu verifikasi Admin.');
+
     return res.status(200).json({
       status: 'SUCCESS',
-      message: '🎉 Pembayaran berhasil dikonfirmasi! Reservasi Anda sekarang CONFIRMED.',
+      message: responseMsg,
       data: {
         booking: bookingResult.rows[0],
         payment: paymentResult.rows[0],

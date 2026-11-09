@@ -84,10 +84,24 @@ router.get('/restaurant-bookings', adminController.getAllRestaurantBookings);
 
 /**
  * @route   PUT /api/v1/admin/restaurant-bookings/:id/status
- * @desc    Mengubah status reservasi restoran
+ * @desc    Mengubah status reservasi restoran & verifikasi pembayaran
  * @access  Private (Admin Only)
  */
 router.put('/restaurant-bookings/:id/status', adminController.updateRestaurantBookingStatus);
+
+/**
+ * @route   GET /api/v1/admin/venue-bookings
+ * @desc    Mengambil seluruh data reservasi ballroom & meeting room
+ * @access  Private (Admin Only)
+ */
+router.get('/venue-bookings', adminController.getAllVenueBookings);
+
+/**
+ * @route   PUT /api/v1/admin/venue-bookings/:id/status
+ * @desc    Mengubah status reservasi ballroom & meeting room serta verifikasi pembayaran
+ * @access  Private (Admin Only)
+ */
+router.put('/venue-bookings/:id/status', adminController.updateVenueBookingStatus);
 
 /**
  * @route   GET /api/v1/admin/reviews

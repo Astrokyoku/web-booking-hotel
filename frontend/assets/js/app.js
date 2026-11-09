@@ -802,29 +802,85 @@ async function handleCreateBookingSubmit(e) {
 // ============================================================
 
 /**
- * Membuka Modal Pembayaran
+ * Membuka Modal Pembayaran (Mendukung Kamar, Restoran, dan Ballroom/MICE)
  */
-function openPaymentModal(bookingData) {
-  const { booking, pricing_breakdown, payment } = bookingData;
-  state.activeBooking = bookingData;
+function openPaymentModal(paymentData) {
+  state.activePayment = paymentData;
+  state.activeBooking = paymentData;
 
   const detailsArea = document.getElementById('paymentDetailsArea');
-  detailsArea.innerHTML = `
-    <span class="section-tag">Tagihan Reservasi</span>
-    <h3 class="font-serif" style="font-size: 1.5rem; margin-bottom: 4px;">Kode: ${booking.booking_code}</h3>
-    <p style="color: var(--text-secondary); font-size: 0.9rem;">${booking.room_type_name} • Kamar #${booking.room_number} (Lt. ${booking.floor})</p>
-    <div style="font-size: 1.8rem; font-weight: 700; color: var(--gold-light); margin: 12px 0;">
-      Rp ${Number(pricing_breakdown.total_price).toLocaleString('id-ID')}
-    </div>
-    <p style="font-size: 0.8rem; color: var(--text-muted);">Termasuk PPN 12%: Rp ${Number(pricing_breakdown.tax_amount).toLocaleString('id-ID')}</p>
-  `;
+  if (!detailsArea) return;
+
+  // Deteksi tipe pembayaran
+  let type = paymentData.type;
+  if (!type) {
+    if (paymentData.reservation || paymentData.reservation_code) {
+      type = 'restaurant';
+    } else if (paymentData.venue_booking_code || (paymentData.booking && paymentData.booking.venue_booking_code)) {
+      type = 'venue';
+    } else {
+      type = 'room';
+    }
+  }
+
+  if (type === 'restaurant') {
+    const r = paymentData.reservation || paymentData;
+    const amount = Number(r.total_price || 100000);
+    const dateStr = new Date(r.reservation_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    const sessionLabels = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner' };
+    const sessionStr = sessionLabels[r.session_time] || r.session_time;
+
+    detailsArea.innerHTML = `
+      <span class="section-tag">Tagihan Deposit Restoran</span>
+      <h3 class="font-serif" style="font-size: 1.5rem; margin-bottom: 4px;">Kode: ${r.reservation_code}</h3>
+      <p style="color: var(--text-secondary); font-size: 0.9rem;">Restoran Angie • ${r.guest_count} Orang • Sesi ${sessionStr}</p>
+      <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 2px;">Tanggal: ${dateStr}</p>
+      <div style="font-size: 1.8rem; font-weight: 700; color: var(--gold-light); margin: 12px 0;">
+        Rp ${amount.toLocaleString('id-ID')}
+      </div>
+      <p style="font-size: 0.8rem; color: var(--text-muted);">Deposit komitmen meja (dapat dipotongkan langsung dari total tagihan bersantap).</p>
+    `;
+  } else if (type === 'venue') {
+    const v = paymentData.booking || paymentData;
+    const amount = Number(v.total_price || 0);
+    const dateStr = new Date(v.event_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    const durLabel = v.duration_type === 'full_day' ? 'Full Day (12 Jam)' : 'Half Day (6 Jam)';
+
+    detailsArea.innerHTML = `
+      <span class="section-tag">Tagihan Sewa Ballroom & MICE</span>
+      <h3 class="font-serif" style="font-size: 1.5rem; margin-bottom: 4px;">Kode: ${v.venue_booking_code}</h3>
+      <p style="color: var(--text-secondary); font-size: 0.9rem;">${v.venue_name || 'Grand Luxury Ballroom'} • ${durLabel}</p>
+      <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 2px;">Tanggal: ${dateStr} • Layout: ${v.layout_type} (${v.attendee_count} Orang)</p>
+      <div style="font-size: 1.8rem; font-weight: 700; color: var(--gold-light); margin: 12px 0;">
+        Rp ${amount.toLocaleString('id-ID')}
+      </div>
+      <p style="font-size: 0.8rem; color: var(--text-muted);">Termasuk fasilitas audio-visual, tata letak standar, dan lighting.</p>
+    `;
+  } else {
+    // Kamar Hotel
+    const booking = paymentData.booking || paymentData;
+    const pricing = paymentData.pricing_breakdown || {
+      total_price: booking.total_price,
+      tax_amount: Math.round(Number(booking.total_price) * 0.12 / 1.12),
+    };
+
+    detailsArea.innerHTML = `
+      <span class="section-tag">Tagihan Reservasi Kamar</span>
+      <h3 class="font-serif" style="font-size: 1.5rem; margin-bottom: 4px;">Kode: ${booking.booking_code}</h3>
+      <p style="color: var(--text-secondary); font-size: 0.9rem;">${booking.room_type_name || 'Kamar Hotel'} • Kamar #${booking.room_number || '-'} (Lt. ${booking.floor || 1})</p>
+      <div style="font-size: 1.8rem; font-weight: 700; color: var(--gold-light); margin: 12px 0;">
+        Rp ${Number(pricing.total_price).toLocaleString('id-ID')}
+      </div>
+      <p style="font-size: 0.8rem; color: var(--text-muted);">Termasuk PPN 12%: Rp ${Number(pricing.tax_amount).toLocaleString('id-ID')}</p>
+    `;
+  }
 
   renderPaymentInstructions();
   openModal('paymentModal');
 }
 
 /**
- * Render Instruksi Pembayaran (VA / QRIS / Kartu)
+ * Render Instruksi Pembayaran (VA / QRIS / Kartu / Kasir)
  */
 function renderPaymentInstructions() {
   const method = document.getElementById('paymentMethodSelect').value;
@@ -854,7 +910,7 @@ function renderPaymentInstructions() {
     `;
   } else {
     box.innerHTML = `
-      <p style="font-size: 0.85rem; color: var(--text-secondary);">Silakan lakukan pelunasan tunai di Meja Resepsionis saat tiba di hotel.</p>
+      <p style="font-size: 0.85rem; color: var(--text-secondary);">Silakan lakukan pelunasan langsung di Meja Resepsionis / Kasir saat kedatangan.</p>
     `;
   }
 }
@@ -863,33 +919,87 @@ function renderPaymentInstructions() {
  * Handle Eksekusi Pembayaran
  */
 async function handleProcessPayment() {
-  if (!state.activeBooking) return;
+  const pData = state.activePayment || state.activeBooking;
+  if (!pData) return;
 
-  const bookingId = state.activeBooking.booking.id;
   const payment_method = document.getElementById('paymentMethodSelect').value;
   const payBtn = document.getElementById('confirmPayBtn');
 
   payBtn.disabled = true;
   payBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Mengonfirmasi Pembayaran...`;
 
+  let type = pData.type;
+  if (!type) {
+    if (pData.reservation || pData.reservation_code) type = 'restaurant';
+    else if (pData.venue_booking_code || (pData.booking && pData.booking.venue_booking_code)) type = 'venue';
+    else type = 'room';
+  }
+
   try {
-    const res = await fetch(`${API_BASE}/bookings/${bookingId}/pay`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${state.token}`,
-      },
-      body: JSON.stringify({ payment_method }),
-    });
+    if (type === 'restaurant') {
+      const resId = pData.reservation ? pData.reservation.id : (pData.id || pData.booking?.id);
+      const res = await fetch(`${API_BASE}/services/restaurant/${resId}/pay`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${state.token}`,
+        },
+        body: JSON.stringify({ payment_method }),
+      });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
 
-    closeModal('paymentModal');
-    showToast('🎉 Pembayaran Berhasil! E-Voucher telah diterbitkan.', 'success');
+      closeModal('paymentModal');
+      showToast(data.message || 'Konfirmasi pembayaran restoran berhasil dikirim!', 'success');
+      openRestaurantVoucher(data.data.reservation);
+      if (typeof openMyBookingsModal === 'function' && document.getElementById('myBookingsModal')?.classList.contains('active')) {
+        openMyBookingsModal();
+      }
 
-    // Buka E-Voucher
-    openVoucherModal(bookingId);
+    } else if (type === 'venue') {
+      const venueId = pData.booking ? pData.booking.id : (pData.id || pData.reservation?.id);
+      const res = await fetch(`${API_BASE}/services/venues/${venueId}/pay`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${state.token}`,
+        },
+        body: JSON.stringify({ payment_method }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      closeModal('paymentModal');
+      showToast(data.message || 'Konfirmasi pembayaran venue berhasil dikirim!', 'success');
+      openVenueVoucher(data.data.booking);
+      if (typeof openMyBookingsModal === 'function' && document.getElementById('myBookingsModal')?.classList.contains('active')) {
+        openMyBookingsModal();
+      }
+
+    } else {
+      // Room
+      const bookingId = pData.booking ? pData.booking.id : pData.id;
+      const res = await fetch(`${API_BASE}/bookings/${bookingId}/pay`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${state.token}`,
+        },
+        body: JSON.stringify({ payment_method }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      closeModal('paymentModal');
+      showToast(data.message || 'Konfirmasi pembayaran kamar berhasil dikirim!', 'success');
+      openVoucherModal(bookingId);
+      if (typeof openMyBookingsModal === 'function' && document.getElementById('myBookingsModal')?.classList.contains('active')) {
+        openMyBookingsModal();
+      }
+    }
   } catch (err) {
     showToast(err.message, 'error');
   } finally {
@@ -987,7 +1097,7 @@ async function openVoucherModal(bookingIdOrCode) {
       </div>
 
       <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #94a3b8;">
-        <span>Metode: ${b.payment_method || 'Virtual Account'} • Status: ${b.payment_status || 'PAID'}</span>
+        <span>Metode: ${(b.payment_method || 'Virtual Account').toUpperCase()} • Status: ${b.payment_status === 'paid' ? 'LUNAS (PAID)' : (b.payment_status === 'waiting_verification' ? 'MENUNGGU VERIFIKASI ADMIN' : 'BELUM DIBAYAR')}</span>
         <span>Dicetak pada: ${new Date().toLocaleDateString('id-ID')}</span>
       </div>
     `;
@@ -1002,8 +1112,14 @@ async function openVoucherModal(bookingIdOrCode) {
  * Handle Cancel Booking from Payment Modal
  */
 function handleCancelCurrentBooking() {
-  if (!state.activeBooking || !state.activeBooking.booking) return;
-  handleCancelBooking(state.activeBooking.booking.id);
+  if (!state.activeBooking) return;
+  if (state.activeBooking.type === 'restaurant' && state.activeBooking.reservation) {
+    handleCancelRestaurantBooking(state.activeBooking.reservation.id);
+  } else if (state.activeBooking.type === 'venue' && state.activeBooking.booking) {
+    handleCancelVenueBooking(state.activeBooking.booking.id);
+  } else if (state.activeBooking.booking) {
+    handleCancelBooking(state.activeBooking.booking.id);
+  }
 }
 
 /**
@@ -1156,14 +1272,26 @@ async function openMyBookingsModal() {
 
       const isCancellable = b.booking_status === 'pending' || b.booking_status === 'confirmed';
       const isReviewed = Boolean(b.review_id);
+      const isPaid = b.payment_status === 'paid';
+      const isWaiting = b.payment_status === 'waiting_verification';
+      const payColor = isPaid ? '#10b981' : (isWaiting ? '#38bdf8' : '#f59e0b');
+      const payBg = isPaid ? 'rgba(16,185,129,0.15)' : (isWaiting ? 'rgba(56,189,248,0.15)' : 'rgba(245,158,11,0.15)');
+      const payLabel = isPaid
+        ? `<i class="fa-solid fa-check"></i> LUNAS (${(b.payment_method || 'transfer').toUpperCase()})`
+        : (isWaiting ? `<i class="fa-solid fa-hourglass-half"></i> MENUNGGU VERIFIKASI` : `<i class="fa-solid fa-clock"></i> BELUM BAYAR`);
 
       return `
         <div style="background: var(--bg-surface-elevated); border: 1px solid var(--gold-border); border-radius: var(--radius-sm); padding: 18px; display: flex; flex-direction: column; gap: 10px;">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="font-weight: 700; color: var(--gold-light); font-size: 1.05rem;">${b.booking_code}</span>
-            <span style="font-size: 0.75rem; font-weight: 700; color: #fff; background: ${badgeClass}; padding: 2px 10px; border-radius: 12px; text-transform: uppercase;">
-              ${b.booking_status}
-            </span>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <span style="font-size: 0.75rem; font-weight: 700; color: ${payColor}; background: ${payBg}; border: 1px solid ${payColor}; padding: 2px 8px; border-radius: 12px;">
+                ${payLabel}
+              </span>
+              <span style="font-size: 0.75rem; font-weight: 700; color: #fff; background: ${badgeClass}; padding: 2px 10px; border-radius: 12px; text-transform: uppercase;">
+                ${b.booking_status}
+              </span>
+            </div>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.85rem; color: var(--text-secondary);">
@@ -1188,9 +1316,9 @@ async function openMyBookingsModal() {
                   <i class="fa-solid fa-star"></i> Beri Rating
                 </button>
               ` : '')}
-              ${b.booking_status === 'pending' ? `
+              ${(!isPaid && !isWaiting && b.booking_status !== 'cancelled') ? `
                 <button class="btn btn-gold btn-sm" onclick="openPaymentModal({ booking: { id: '${b.id}', booking_code: '${b.booking_code}', room_type_name: '${b.room_type_name}', room_number: '${b.room_number}', floor: 1 }, pricing_breakdown: { total_price: ${b.total_price}, tax_amount: Math.round(${b.total_price} * 0.12 / 1.12) }, payment: { status: 'unpaid' } })">
-                  Bayar
+                  <i class="fa-solid fa-wallet"></i> Bayar
                 </button>
               ` : ''}
               ${isCancellable ? `
@@ -1214,15 +1342,28 @@ async function openMyBookingsModal() {
         if (b.status === 'completed') badgeClass = 'var(--text-secondary)';
         if (b.status === 'cancelled') badgeClass = 'var(--accent-rose)';
 
+        const isPaid = b.payment_status === 'paid';
+        const isWaiting = b.payment_status === 'waiting_verification';
+        const isCancellable = b.status === 'pending' || b.status === 'confirmed';
+        const payColor = isPaid ? '#10b981' : (isWaiting ? '#38bdf8' : '#f59e0b');
+        const payBg = isPaid ? 'rgba(16,185,129,0.15)' : (isWaiting ? 'rgba(56,189,248,0.15)' : 'rgba(245,158,11,0.15)');
+        const payLabel = isPaid
+          ? `<i class="fa-solid fa-check"></i> LUNAS (${(b.payment_method || 'transfer').toUpperCase()})`
+          : (isWaiting ? `<i class="fa-solid fa-hourglass-half"></i> MENUNGGU VERIFIKASI` : `<i class="fa-solid fa-clock"></i> BELUM BAYAR`);
         const dateStr = new Date(b.reservation_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
         
         return `
           <div style="background: var(--bg-surface-elevated); border: 1px solid var(--gold-border); border-radius: var(--radius-sm); padding: 18px; display: flex; flex-direction: column; gap: 10px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <span style="font-weight: 700; color: var(--gold-light); font-size: 1.05rem;">${b.reservation_code}</span>
-              <span style="font-size: 0.75rem; font-weight: 700; color: #fff; background: ${badgeClass}; padding: 2px 10px; border-radius: 12px; text-transform: uppercase;">
-                ${b.status}
-              </span>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <span style="font-size: 0.75rem; font-weight: 700; color: ${payColor}; background: ${payBg}; border: 1px solid ${payColor}; padding: 2px 8px; border-radius: 12px;">
+                  ${payLabel}
+                </span>
+                <span style="font-size: 0.75rem; font-weight: 700; color: #fff; background: ${badgeClass}; padding: 2px 10px; border-radius: 12px; text-transform: uppercase;">
+                  ${b.status}
+                </span>
+              </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.85rem; color: var(--text-secondary);">
@@ -1232,10 +1373,23 @@ async function openMyBookingsModal() {
               <div><strong>Meja:</strong> ${b.table_number || 'Belum Ditentukan'}</div>
             </div>
 
-            <div style="display: flex; justify-content: flex-end; margin-top: 6px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08);">
-              <button class="btn btn-outline-gold btn-sm" onclick='openRestaurantVoucher(${JSON.stringify(b)})'>
-                <i class="fa-solid fa-file-invoice"></i> Bukti Reservasi
-              </button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 10px;">
+              <span style="font-weight: 700; color: var(--gold-primary);">Deposit: Rp ${Number(b.total_price || 100000).toLocaleString('id-ID')}</span>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                ${(!isPaid && !isWaiting && b.status !== 'cancelled') ? `
+                  <button class="btn btn-gold btn-sm" onclick='openPaymentModal({ type: "restaurant", reservation: ${JSON.stringify(b)} })'>
+                    <i class="fa-solid fa-wallet"></i> Bayar Deposit
+                  </button>
+                ` : ''}
+                <button class="btn btn-outline-gold btn-sm" onclick='openRestaurantVoucher(${JSON.stringify(b)})'>
+                  <i class="fa-solid fa-file-invoice"></i> Bukti Reservasi
+                </button>
+                ${isCancellable ? `
+                  <button class="btn btn-outline-danger btn-sm" onclick="handleCancelRestaurantBooking('${b.id}')" title="Batalkan Reservasi Restoran">
+                    <i class="fa-solid fa-ban"></i> Batalkan
+                  </button>
+                ` : ''}
+              </div>
             </div>
           </div>
         `;
@@ -1251,6 +1405,14 @@ async function openMyBookingsModal() {
         if (b.status === 'completed') badgeClass = 'var(--text-secondary)';
         if (b.status === 'cancelled') badgeClass = 'var(--accent-rose)';
 
+        const isPaid = b.payment_status === 'paid';
+        const isWaiting = b.payment_status === 'waiting_verification';
+        const isCancellable = b.status === 'pending' || b.status === 'confirmed';
+        const payColor = isPaid ? '#10b981' : (isWaiting ? '#38bdf8' : '#f59e0b');
+        const payBg = isPaid ? 'rgba(16,185,129,0.15)' : (isWaiting ? 'rgba(56,189,248,0.15)' : 'rgba(245,158,11,0.15)');
+        const payLabel = isPaid
+          ? `<i class="fa-solid fa-check"></i> LUNAS (${(b.payment_method || 'transfer').toUpperCase()})`
+          : (isWaiting ? `<i class="fa-solid fa-hourglass-half"></i> MENUNGGU VERIFIKASI` : `<i class="fa-solid fa-clock"></i> BELUM BAYAR`);
         const dateStr = new Date(b.event_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
         const durLabel = b.duration_type === 'full_day' ? 'Full Day (12 Jam)' : 'Half Day (6 Jam)';
         
@@ -1258,9 +1420,14 @@ async function openMyBookingsModal() {
           <div style="background: var(--bg-surface-elevated); border: 1px solid var(--gold-border); border-radius: var(--radius-sm); padding: 18px; display: flex; flex-direction: column; gap: 10px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <span style="font-weight: 700; color: var(--gold-light); font-size: 1.05rem;">${b.venue_booking_code}</span>
-              <span style="font-size: 0.75rem; font-weight: 700; color: #fff; background: ${badgeClass}; padding: 2px 10px; border-radius: 12px; text-transform: uppercase;">
-                ${b.status}
-              </span>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <span style="font-size: 0.75rem; font-weight: 700; color: ${payColor}; background: ${payBg}; border: 1px solid ${payColor}; padding: 2px 8px; border-radius: 12px;">
+                  ${payLabel}
+                </span>
+                <span style="font-size: 0.75rem; font-weight: 700; color: #fff; background: ${badgeClass}; padding: 2px 10px; border-radius: 12px; text-transform: uppercase;">
+                  ${b.status}
+                </span>
+              </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.85rem; color: var(--text-secondary);">
@@ -1270,9 +1437,23 @@ async function openMyBookingsModal() {
               <div><strong>Layout:</strong> <span style="text-transform: capitalize;">${b.layout_type}</span> (${b.attendee_count} Orang)</div>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 10px;">
               <span style="font-weight: 700; color: var(--gold-primary);">Rp ${Number(b.total_price).toLocaleString('id-ID')}</span>
-              <span style="font-size: 0.85rem; color: var(--text-secondary);">Status: ${b.status.toUpperCase()}</span>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                ${(!isPaid && !isWaiting && b.status !== 'cancelled') ? `
+                  <button class="btn btn-gold btn-sm" onclick='openPaymentModal({ type: "venue", booking: ${JSON.stringify(b)} })'>
+                    <i class="fa-solid fa-wallet"></i> Bayar Sekarang
+                  </button>
+                ` : ''}
+                <button class="btn btn-outline-gold btn-sm" onclick='openVenueVoucher(${JSON.stringify(b)})'>
+                  <i class="fa-solid fa-file-invoice"></i> E-Voucher
+                </button>
+                ${isCancellable ? `
+                  <button class="btn btn-outline-danger btn-sm" onclick="handleCancelVenueBooking('${b.id}')" title="Batalkan Reservasi Ballroom">
+                    <i class="fa-solid fa-ban"></i> Batalkan
+                  </button>
+                ` : ''}
+              </div>
             </div>
           </div>
         `;
@@ -1287,31 +1468,103 @@ async function openMyBookingsModal() {
 }
 
 /**
+ * Eksekusi Pembatalan Reservasi Restoran (Guest)
+ */
+async function handleCancelRestaurantBooking(id) {
+  if (!confirm('Apakah Anda yakin ingin membatalkan reservasi meja restoran ini?')) {
+    return;
+  }
+  try {
+    const res = await fetch(`${API_BASE}/services/restaurant/${id}/cancel`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${state.token}`,
+      },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+
+    showToast(data.message || 'Reservasi restoran berhasil dibatalkan.', 'success');
+    closeModal('paymentModal');
+    closeModal('restaurantVoucherModal');
+
+    const myBookingsModal = document.getElementById('myBookingsModal');
+    if (myBookingsModal && myBookingsModal.classList.contains('active')) {
+      openMyBookingsModal();
+    }
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+/**
+ * Eksekusi Pembatalan Reservasi Ballroom / Venue (Guest)
+ */
+async function handleCancelVenueBooking(id) {
+  if (!confirm('Apakah Anda yakin ingin membatalkan reservasi venue/ballroom ini?')) {
+    return;
+  }
+  try {
+    const res = await fetch(`${API_BASE}/services/venues/${id}/cancel`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${state.token}`,
+      },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+
+    showToast(data.message || 'Reservasi venue berhasil dibatalkan.', 'success');
+    closeModal('paymentModal');
+    closeModal('venueVoucherModal');
+
+    const myBookingsModal = document.getElementById('myBookingsModal');
+    if (myBookingsModal && myBookingsModal.classList.contains('active')) {
+      openMyBookingsModal();
+    }
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+/**
  * Membuka Modal Bukti Reservasi Restoran
  */
 function openRestaurantVoucher(b) {
   const printArea = document.getElementById('restVoucherPrintArea');
+  if (!printArea) return;
   const dateStr = new Date(b.reservation_date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   
   let statusBadge = '';
-  if (b.status === 'confirmed') statusBadge = '<span style="color: green; font-weight: bold;">CONFIRMED</span>';
-  else if (b.status === 'pending') statusBadge = '<span style="color: orange; font-weight: bold;">PENDING</span>';
-  else if (b.status === 'completed') statusBadge = '<span style="color: gray; font-weight: bold;">COMPLETED</span>';
-  else statusBadge = `<span style="color: red; font-weight: bold;">${b.status.toUpperCase()}</span>`;
+  if (b.status === 'confirmed') statusBadge = '<span style="color: #10b981; font-weight: bold;">CONFIRMED</span>';
+  else if (b.status === 'pending') statusBadge = '<span style="color: #f59e0b; font-weight: bold;">PENDING</span>';
+  else if (b.status === 'completed') statusBadge = '<span style="color: #6b7280; font-weight: bold;">COMPLETED</span>';
+  else statusBadge = `<span style="color: #ef4444; font-weight: bold;">${(b.status || '').toUpperCase()}</span>`;
+
+  let payBadge = '';
+  if (b.payment_status === 'paid') {
+    payBadge = `<span style="color: #10b981; font-weight: bold;"><i class="fa-solid fa-check-circle"></i> LUNAS (${(b.payment_method || 'BANK_TRANSFER').toUpperCase()})</span>`;
+  } else if (b.payment_status === 'waiting_verification') {
+    payBadge = `<span style="color: #0284c7; font-weight: bold;"><i class="fa-solid fa-hourglass-half"></i> MENUNGGU VERIFIKASI ADMIN (${(b.payment_method || 'BANK_TRANSFER').toUpperCase()})</span>`;
+  } else {
+    payBadge = '<span style="color: #f59e0b; font-weight: bold;"><i class="fa-solid fa-clock"></i> BELUM DIBAYAR</span>';
+  }
 
   printArea.innerHTML = `
     <div style="text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 20px; margin-bottom: 20px;">
       <h2 style="margin: 0; font-family: serif; color: #c5a059;">LUXURY HOTEL & RESORT</h2>
-      <p style="margin: 5px 0 0; color: #666; font-size: 0.9rem;">Restoran "Angie" - Bukti Reservasi</p>
+      <p style="margin: 5px 0 0; color: #666; font-size: 0.9rem;">Restoran "Angie" - Bukti Reservasi & Deposit Meja</p>
     </div>
     
-    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
       <div>
-        <p style="margin: 0; font-size: 0.85rem; color: #666;">Kode Booking</p>
-        <h3 style="margin: 0; font-family: monospace; font-size: 1.2rem;">${b.reservation_code}</h3>
+        <p style="margin: 0; font-size: 0.85rem; color: #666;">Kode Booking Meja</p>
+        <h3 style="margin: 0; font-family: monospace; font-size: 1.25rem; color: #111;">${b.reservation_code}</h3>
       </div>
       <div style="text-align: right;">
-        <p style="margin: 0; font-size: 0.85rem; color: #666;">Status</p>
+        <p style="margin: 0; font-size: 0.85rem; color: #666;">Status Reservasi</p>
         <h3 style="margin: 0;">${statusBadge}</h3>
       </div>
     </div>
@@ -1322,7 +1575,7 @@ function openRestaurantVoucher(b) {
         <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right;">${b.guest_name || state.user?.full_name || '-'}</td>
       </tr>
       <tr>
-        <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>Tanggal</strong></td>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>Tanggal Kunjungan</strong></td>
         <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right;">${dateStr}</td>
       </tr>
       <tr>
@@ -1334,21 +1587,118 @@ function openRestaurantVoucher(b) {
         <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right;">${b.guest_count} Orang</td>
       </tr>
       <tr>
-        <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>No Meja</strong></td>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>Nomor Meja</strong></td>
         <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right;">${b.table_number || 'Belum Ditentukan (Walk-in)'}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>Status Pembayaran</strong></td>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right;">${payBadge}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 0; border-bottom: 2px solid #c5a059; font-size: 1.05rem;"><strong>Deposit Komitmen Meja</strong></td>
+        <td style="padding: 12px 0; border-bottom: 2px solid #c5a059; text-align: right; font-size: 1.2rem; font-weight: bold; color: #b45309;">
+          Rp ${Number(b.total_price || 100000).toLocaleString('id-ID')}
+        </td>
       </tr>
     </table>
     
-    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
       <p style="margin: 0; font-size: 0.85rem; font-weight: bold;">Permintaan Khusus:</p>
-      <p style="margin: 5px 0 0; font-size: 0.85rem; color: #555;">${b.special_requests || '-'}</p>
+      <p style="margin: 5px 0 0; font-size: 0.85rem; color: #555;">${b.special_requests || 'Tidak ada permintaan khusus.'}</p>
     </div>
     
-    <div style="text-align: center; margin-top: 30px; font-size: 0.8rem; color: #888;">
-      Harap tunjukkan Bukti Reservasi ini kepada resepsionis restoran saat kedatangan.
+    <div style="text-align: center; font-size: 0.8rem; color: #888;">
+      Tunjukkan Bukti Reservasi ini kepada resepsionis restoran Angie saat kedatangan. Deposit akan otomatis memotong tagihan bersantap Anda.
     </div>
   `;
   openModal('restaurantVoucherModal');
+}
+
+/**
+ * Membuka Modal Bukti Reservasi Ballroom & MICE
+ */
+function openVenueVoucher(b) {
+  const printArea = document.getElementById('venueVoucherPrintArea');
+  if (!printArea) return;
+  
+  const dateStr = new Date(b.event_date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const durLabel = b.duration_type === 'full_day' ? 'Full Day (12 Jam)' : 'Half Day (6 Jam)';
+  
+  let statusBadge = '';
+  if (b.status === 'confirmed') statusBadge = '<span style="color: #10b981; font-weight: bold;">CONFIRMED</span>';
+  else if (b.status === 'pending') statusBadge = '<span style="color: #f59e0b; font-weight: bold;">PENDING</span>';
+  else if (b.status === 'completed') statusBadge = '<span style="color: #6b7280; font-weight: bold;">COMPLETED</span>';
+  else statusBadge = `<span style="color: #ef4444; font-weight: bold;">${(b.status || '').toUpperCase()}</span>`;
+
+  let payBadge = '';
+  if (b.payment_status === 'paid') {
+    payBadge = `<span style="color: #10b981; font-weight: bold;"><i class="fa-solid fa-check-circle"></i> LUNAS (${(b.payment_method || 'BANK_TRANSFER').toUpperCase()})</span>`;
+  } else if (b.payment_status === 'waiting_verification') {
+    payBadge = `<span style="color: #0284c7; font-weight: bold;"><i class="fa-solid fa-hourglass-half"></i> MENUNGGU VERIFIKASI ADMIN (${(b.payment_method || 'BANK_TRANSFER').toUpperCase()})</span>`;
+  } else {
+    payBadge = '<span style="color: #f59e0b; font-weight: bold;"><i class="fa-solid fa-clock"></i> BELUM DIBAYAR</span>';
+  }
+
+  printArea.innerHTML = `
+    <div style="text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 20px; margin-bottom: 20px;">
+      <h2 style="margin: 0; font-family: serif; color: #c5a059;">LUXURY HOTEL & RESORT</h2>
+      <p style="margin: 5px 0 0; color: #666; font-size: 0.9rem;">Grand Ballroom & MICE - Bukti Reservasi & Invoice</p>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+      <div>
+        <p style="margin: 0; font-size: 0.85rem; color: #666;">Kode Booking Event</p>
+        <h3 style="margin: 0; font-family: monospace; font-size: 1.25rem; color: #111;">${b.venue_booking_code}</h3>
+      </div>
+      <div style="text-align: right;">
+        <p style="margin: 0; font-size: 0.85rem; color: #666;">Status Reservasi</p>
+        <h3 style="margin: 0;">${statusBadge}</h3>
+      </div>
+    </div>
+    
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+      <tr>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>Nama Penyelenggara</strong></td>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right;">${b.guest_name || state.user?.full_name || '-'}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>Venue Terpilih</strong></td>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right; color: #c5a059; font-weight: bold;">${b.venue_name || 'Grand Luxury Ballroom'}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>Tanggal Acara</strong></td>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right;">${dateStr}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>Durasi Pemakaian</strong></td>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right;">${durLabel}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>Tata Letak (Layout)</strong></td>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right; text-transform: capitalize;">${b.layout_type} (${b.attendee_count} Orang)</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>Status Pembayaran</strong></td>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right;">${payBadge}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 0; border-bottom: 2px solid #c5a059; font-size: 1.05rem;"><strong>Total Biaya Sewa</strong></td>
+        <td style="padding: 12px 0; border-bottom: 2px solid #c5a059; text-align: right; font-size: 1.25rem; font-weight: bold; color: #b45309;">
+          Rp ${Number(b.total_price).toLocaleString('id-ID')}
+        </td>
+      </tr>
+    </table>
+    
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+      <p style="margin: 0; font-size: 0.85rem; font-weight: bold;">Permintaan Khusus & Detail Acara:</p>
+      <p style="margin: 5px 0 0; font-size: 0.85rem; color: #555;">${b.special_requests || 'Tidak ada permintaan khusus.'}</p>
+    </div>
+    
+    <div style="text-align: center; font-size: 0.8rem; color: #888;">
+      Tunjukkan E-Voucher ini kepada Banquet Coordinator saat koordinasi teknis / gladi resik.
+    </div>
+  `;
+  openModal('venueVoucherModal');
 }
 
 // ============================================================

@@ -104,8 +104,8 @@ CREATE TABLE IF NOT EXISTS payments (
     payment_method  VARCHAR(30) NOT NULL DEFAULT 'bank_transfer'
                     CHECK (payment_method IN ('bank_transfer', 'credit_card', 'ewallet', 'cash')),
     amount          DECIMAL(14, 2) NOT NULL CHECK (amount > 0),
-    status          VARCHAR(20) NOT NULL DEFAULT 'unpaid'
-                    CHECK (status IN ('unpaid', 'paid', 'refunded')),
+    status          VARCHAR(30) NOT NULL DEFAULT 'unpaid'
+                    CHECK (status IN ('unpaid', 'waiting_verification', 'paid', 'refunded')),
     paid_at         TIMESTAMP WITH TIME ZONE,
     created_at      TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -163,6 +163,12 @@ CREATE TABLE IF NOT EXISTS table_reservations (
     guest_count        INTEGER NOT NULL CHECK (guest_count > 0),
     table_number       VARCHAR(10),
     special_requests   TEXT,
+    total_price        DECIMAL(14, 2) NOT NULL DEFAULT 100000.00 CHECK (total_price >= 0),
+    payment_status     VARCHAR(30) NOT NULL DEFAULT 'unpaid'
+                       CHECK (payment_status IN ('unpaid', 'waiting_verification', 'paid', 'refunded')),
+    payment_method     VARCHAR(30) NOT NULL DEFAULT 'bank_transfer'
+                       CHECK (payment_method IN ('bank_transfer', 'credit_card', 'ewallet', 'cash')),
+    paid_at            TIMESTAMP WITH TIME ZONE,
     status             VARCHAR(20) NOT NULL DEFAULT 'pending'
                        CHECK (status IN ('pending', 'confirmed', 'completed', 'cancelled')),
     created_at         TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -219,6 +225,11 @@ CREATE TABLE IF NOT EXISTS venue_bookings (
     layout_type          VARCHAR(30) NOT NULL CHECK (layout_type IN ('theater', 'classroom', 'banquet', 'u_shape')),
     attendee_count       INTEGER NOT NULL CHECK (attendee_count > 0),
     total_price          DECIMAL(14, 2) NOT NULL,
+    payment_status       VARCHAR(30) NOT NULL DEFAULT 'unpaid'
+                         CHECK (payment_status IN ('unpaid', 'waiting_verification', 'paid', 'refunded')),
+    payment_method       VARCHAR(30) NOT NULL DEFAULT 'bank_transfer'
+                         CHECK (payment_method IN ('bank_transfer', 'credit_card', 'ewallet', 'cash')),
+    paid_at              TIMESTAMP WITH TIME ZONE,
     status               VARCHAR(20) NOT NULL DEFAULT 'pending'
                          CHECK (status IN ('pending', 'confirmed', 'completed', 'cancelled')),
     special_requests     TEXT,

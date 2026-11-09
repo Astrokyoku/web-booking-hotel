@@ -151,8 +151,9 @@ function switchAdminTab(tabId) {
   // Title update
   const titles = {
     dashboard: { title: 'Dashboard & Analitik', sub: 'Pantau performa reservasi, okupansi kamar, dan revenue hotel secara real-time.' },
-    bookings: { title: 'Manajemen Reservasi', sub: 'Kelola status tamu (Check-in, Check-out, Konfirmasi, Pembatalan) secara real-time.' },
-    restaurant_bookings: { title: 'Reservasi Restoran', sub: 'Kelola pemesanan meja dan status kedatangan tamu di restoran.' },
+    bookings: { title: 'Manajemen Reservasi Kamar', sub: 'Kelola status tamu (Check-in, Check-out, Konfirmasi, Pembatalan) secara real-time.' },
+    restaurant_bookings: { title: 'Reservasi Restoran', sub: 'Kelola pemesanan meja, kedatangan tamu, dan verifikasi pembayaran deposit restoran.' },
+    venue_bookings: { title: 'Reservasi Ballroom & MICE', sub: 'Kelola pemesanan ballroom, ruang rapat, jadwal event, dan verifikasi pembayaran MICE.' },
     rooms: { title: 'Inventori Kamar', sub: 'Pantau ketersediaan kamar, kamar terisi, dan atur status pemeliharaan (maintenance).' },
     guests: { title: 'Direktori Tamu', sub: 'Daftar seluruh tamu yang memiliki akun di LUXURY Hotel & Resort.' },
     reviews: { title: 'Ulasan & Rating Tamu', sub: 'Pantau nilai kepuasan tamu dan kelola seluruh ulasan hotel.' },
@@ -167,6 +168,7 @@ function switchAdminTab(tabId) {
   if (tabId === 'dashboard') loadDashboardStats();
   else if (tabId === 'bookings') loadBookings();
   else if (tabId === 'restaurant_bookings') loadRestaurantBookings();
+  else if (tabId === 'venue_bookings') loadVenueBookings();
   else if (tabId === 'rooms') loadRooms();
   else if (tabId === 'guests') loadGuests();
   else if (tabId === 'reviews') loadAdminReviews();
@@ -284,16 +286,19 @@ async function loadBookings() {
       if (b.booking_status === 'completed') badgeClass = 'badge-completed';
       if (b.booking_status === 'cancelled') badgeClass = 'badge-cancelled';
 
-      let payBadge = b.payment_status === 'paid'
-        ? `<span class="badge badge-confirmed"><i class="fa-solid fa-check"></i> LUNAS (${b.payment_method})</span>`
-        : `<span class="badge badge-pending"><i class="fa-solid fa-clock"></i> BELUM BAYAR</span>`;
+      let payBadge = `<span class="badge badge-pending"><i class="fa-solid fa-clock"></i> BELUM BAYAR${b.payment_method === 'cash' ? ' (CASH)' : ''}</span>`;
+      if (b.payment_status === 'paid') {
+        payBadge = `<span class="badge badge-confirmed"><i class="fa-solid fa-check"></i> LUNAS (${(b.payment_method || 'transfer').toUpperCase()})</span>`;
+      } else if (b.payment_status === 'waiting_verification') {
+        payBadge = `<span class="badge badge-checked_in"><i class="fa-solid fa-hourglass-half"></i> MENUNGGU VERIFIKASI (${(b.payment_method || 'transfer').toUpperCase()})</span>`;
+      }
 
       // Aksi Cepat berdasarkan status
       let actionButtons = '';
       if (b.booking_status === 'pending') {
         actionButtons = `
-          <button class="btn btn-success btn-sm" onclick="handleUpdateBookingStatus('${b.id}', 'confirmed', '${b.booking_code}')" title="Konfirmasi Reservasi">
-            <i class="fa-solid fa-circle-check"></i> Konfirmasi
+          <button class="btn btn-success btn-sm" onclick="handleUpdateBookingStatus('${b.id}', 'confirmed', '${b.booking_code}')" title="Verifikasi Pembayaran & Konfirmasi Reservasi">
+            <i class="fa-solid fa-circle-check"></i> Verifikasi & Konfirmasi
           </button>
           <button class="btn btn-danger btn-sm" onclick="handleUpdateBookingStatus('${b.id}', 'cancelled', '${b.booking_code}')" title="Batalkan Reservasi">
             <i class="fa-solid fa-ban"></i> Batal
@@ -651,7 +656,7 @@ let allRestaurantBookings = [];
 
 async function loadRestaurantBookings() {
   const tbody = document.getElementById('restaurantBookingsTableBody');
-  if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px;"><i class="fa-solid fa-spinner fa-spin text-gold"></i> Memuat data reservasi restoran...</td></tr>`;
+  if (tbody) tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; padding: 30px;"><i class="fa-solid fa-spinner fa-spin text-gold"></i> Memuat data reservasi restoran...</td></tr>`;
 
   try {
     const res = await fetch(`${API_BASE}/admin/restaurant-bookings`, {
@@ -664,7 +669,7 @@ async function loadRestaurantBookings() {
     allRestaurantBookings = data.data;
     renderRestaurantBookingsTable();
   } catch (err) {
-    if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px; color: var(--accent-rose);">${err.message}</td></tr>`;
+    if (tbody) tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; padding: 30px; color: var(--accent-rose);">${err.message}</td></tr>`;
     showToast('Gagal memuat reservasi restoran', 'error');
   }
 }
@@ -681,7 +686,7 @@ function renderRestaurantBookingsTable() {
   }
   
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px; color: var(--text-secondary);">Tidak ada reservasi ditemukan.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: var(--text-secondary);">Tidak ada reservasi ditemukan.</td></tr>';
     return;
   }
   
@@ -697,7 +702,41 @@ function renderRestaurantBookingsTable() {
     const dateStr = new Date(b.reservation_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
     const sessionLabels = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner' };
     const sessionStr = sessionLabels[b.session_time] || b.session_time;
+    const isPaid = b.payment_status === 'paid';
+    const isWaiting = b.payment_status === 'waiting_verification';
     
+    let payBadge = `<span class="badge badge-pending"><i class="fa-solid fa-clock"></i> BELUM BAYAR${b.payment_method === 'cash' ? ' (CASH)' : ''}</span>`;
+    if (isPaid) {
+      payBadge = `<span class="badge badge-confirmed"><i class="fa-solid fa-check"></i> LUNAS (${(b.payment_method || 'transfer').toUpperCase()})</span>`;
+    } else if (isWaiting) {
+      payBadge = `<span class="badge badge-checked_in"><i class="fa-solid fa-hourglass-half"></i> MENUNGGU VERIFIKASI (${(b.payment_method || 'transfer').toUpperCase()})</span>`;
+    }
+
+    let actionBtns = `
+      <div style="display: flex; gap: 6px; align-items: center;">
+        <button class="btn btn-outline-gold btn-sm" onclick="saveTableNumber('${b.id}')" title="Simpan Nomor Meja">
+          <i class="fa-solid fa-save"></i>
+        </button>
+    `;
+
+    if (!isPaid && b.status !== 'cancelled') {
+      actionBtns += `
+        <button class="btn btn-success btn-sm" onclick="handleVerifyRestaurantPayment('${b.id}', '${b.reservation_code}')" title="Verifikasi Pembayaran & Konfirmasi">
+          <i class="fa-solid fa-circle-check"></i> Verifikasi Bayar
+        </button>
+      `;
+    }
+
+    if (b.status === 'pending') {
+      actionBtns += `
+        <button class="btn btn-danger btn-sm" onclick="updateRestaurantBookingStatus('${b.id}', 'cancelled')" title="Tolak Reservasi">
+          <i class="fa-solid fa-circle-xmark"></i>
+        </button>
+      `;
+    }
+
+    actionBtns += `</div>`;
+
     return `
       <tr>
         <td style="font-family: monospace; font-weight: bold; color: var(--gold-light);">${b.reservation_code}</td>
@@ -711,13 +750,15 @@ function renderRestaurantBookingsTable() {
           <div style="font-size: 0.85rem; color: var(--text-secondary);">Sesi: ${sessionStr}</div>
         </td>
         <td>${b.guest_count} Orang</td>
+        <td style="font-weight: 600; color: var(--gold-primary);">Rp ${Number(b.total_price || 100000).toLocaleString('id-ID')}</td>
+        <td>${payBadge}</td>
         <td>
-          <input type="text" class="admin-input" style="width: 80px; padding: 4px; text-align: center;" 
+          <input type="text" class="admin-input" style="width: 70px; padding: 4px; text-align: center;" 
             value="${b.table_number || ''}" id="tableNum-${b.id}" placeholder="Meja">
         </td>
-        <td style="font-size: 0.85rem; max-width: 150px; white-space: normal;">${b.special_requests || '-'}</td>
+        <td style="font-size: 0.85rem; max-width: 130px; white-space: normal;">${b.special_requests || '-'}</td>
         <td>
-          <select class="select-filter" style="width: 130px; font-weight: bold; color: ${statusColor};" 
+          <select class="select-filter" style="width: 125px; font-weight: bold; color: ${statusColor};" 
             onchange="updateRestaurantBookingStatus('${b.id}', this.value)">
             <option value="pending" ${b.status === 'pending' ? 'selected' : ''}>Pending</option>
             <option value="confirmed" ${b.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
@@ -725,23 +766,23 @@ function renderRestaurantBookingsTable() {
             <option value="cancelled" ${b.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
           </select>
         </td>
-        <td>
-          <button class="btn btn-outline-gold btn-sm" onclick="saveTableNumber('${b.id}')" title="Simpan Meja">
-            <i class="fa-solid fa-save"></i>
-          </button>
-        </td>
+        <td>${actionBtns}</td>
       </tr>
     `;
   }).join('');
 }
 
-async function updateRestaurantBookingStatus(id, newStatus) {
-  if (!confirm(`Ubah status reservasi menjadi ${newStatus}?`)) {
-    loadRestaurantBookings(); // reset
+async function updateRestaurantBookingStatus(id, newStatus, paymentStatus) {
+  if (!paymentStatus && !confirm(`Ubah status reservasi menjadi '${newStatus}'?`)) {
+    loadRestaurantBookings();
     return;
   }
   
   const tableNum = document.getElementById(`tableNum-${id}`)?.value;
+  const bodyPayload = { status: newStatus, table_number: tableNum };
+  if (paymentStatus) {
+    bodyPayload.payment_status = paymentStatus;
+  }
   
   try {
     const res = await fetch(`${API_BASE}/admin/restaurant-bookings/${id}/status`, {
@@ -750,7 +791,7 @@ async function updateRestaurantBookingStatus(id, newStatus) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${adminState.token}`
       },
-      body: JSON.stringify({ status: newStatus, table_number: tableNum })
+      body: JSON.stringify(bodyPayload)
     });
     
     const data = await res.json();
@@ -762,6 +803,13 @@ async function updateRestaurantBookingStatus(id, newStatus) {
     showToast(err.message, 'error');
     loadRestaurantBookings();
   }
+}
+
+async function handleVerifyRestaurantPayment(id, code) {
+  if (!confirm(`Konfirmasi verifikasi pembayaran deposit untuk kode meja ${code}? Status akan otomatis CONFIRMED.`)) {
+    return;
+  }
+  await updateRestaurantBookingStatus(id, 'confirmed', 'paid');
 }
 
 async function saveTableNumber(id) {
@@ -787,6 +835,160 @@ async function saveTableNumber(id) {
   } catch (err) {
     showToast(err.message, 'error');
   }
+}
+
+// ============================================================
+// 8b. VENUE & BALLROOM BOOKINGS (MICE)
+// ============================================================
+let allVenueBookings = [];
+
+async function loadVenueBookings() {
+  const tbody = document.getElementById('venueBookingsTableBody');
+  if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px;"><i class="fa-solid fa-spinner fa-spin text-gold"></i> Memuat data reservasi venue...</td></tr>`;
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/venue-bookings`, {
+      headers: { 'Authorization': `Bearer ${adminState.token}` },
+    });
+    
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+    
+    allVenueBookings = data.data;
+    renderVenueBookingsTable();
+  } catch (err) {
+    if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px; color: var(--accent-rose);">${err.message}</td></tr>`;
+    showToast('Gagal memuat reservasi venue', 'error');
+  }
+}
+
+function renderVenueBookingsTable() {
+  const tbody = document.getElementById('venueBookingsTableBody');
+  const filter = document.getElementById('venueBookingStatusFilter') ? document.getElementById('venueBookingStatusFilter').value : 'all';
+  
+  if (!tbody) return;
+  
+  let filtered = allVenueBookings;
+  if (filter !== 'all') {
+    filtered = filtered.filter(b => b.status === filter);
+  }
+  
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px; color: var(--text-secondary);">Tidak ada reservasi venue ditemukan.</td></tr>';
+    return;
+  }
+  
+  const statusColors = {
+    'pending': 'var(--accent-amber)',
+    'confirmed': 'var(--accent-emerald)',
+    'completed': 'var(--text-secondary)',
+    'cancelled': 'var(--accent-rose)'
+  };
+  
+  tbody.innerHTML = filtered.map(b => {
+    const statusColor = statusColors[b.status] || 'gray';
+    const dateStr = new Date(b.event_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    const durLabel = b.duration_type === 'full_day' ? 'Full Day (12 Jam)' : 'Half Day (6 Jam)';
+    const isPaid = b.payment_status === 'paid';
+    const isWaiting = b.payment_status === 'waiting_verification';
+    
+    let payBadge = `<span class="badge badge-pending"><i class="fa-solid fa-clock"></i> BELUM BAYAR${b.payment_method === 'cash' ? ' (CASH)' : ''}</span>`;
+    if (isPaid) {
+      payBadge = `<span class="badge badge-confirmed"><i class="fa-solid fa-check"></i> LUNAS (${(b.payment_method || 'transfer').toUpperCase()})</span>`;
+    } else if (isWaiting) {
+      payBadge = `<span class="badge badge-checked_in"><i class="fa-solid fa-hourglass-half"></i> MENUNGGU VERIFIKASI (${(b.payment_method || 'transfer').toUpperCase()})</span>`;
+    }
+
+    let actionBtns = `<div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">`;
+
+    if (!isPaid && b.status !== 'cancelled') {
+      actionBtns += `
+        <button class="btn btn-success btn-sm" onclick="handleVerifyVenuePayment('${b.id}', '${b.venue_booking_code}')" title="Verifikasi Pembayaran & Konfirmasi">
+          <i class="fa-solid fa-circle-check"></i> Verifikasi Bayar
+        </button>
+      `;
+    }
+
+    if (b.status === 'pending') {
+      actionBtns += `
+        <button class="btn btn-danger btn-sm" onclick="updateVenueBookingStatus('${b.id}', 'cancelled')" title="Tolak Reservasi">
+          <i class="fa-solid fa-circle-xmark"></i> Tolak
+        </button>
+      `;
+    }
+
+    actionBtns += `</div>`;
+
+    return `
+      <tr>
+        <td style="font-family: monospace; font-weight: bold; color: var(--gold-light);">${b.venue_booking_code}</td>
+        <td>
+          <div style="font-weight: 600;">${b.guest_name}</div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary);">${b.guest_email}</div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary);">${b.guest_phone || '-'}</div>
+        </td>
+        <td>
+          <div style="font-weight: 600; color: var(--gold-light);">${b.venue_name || 'Grand Ballroom'}</div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary); text-transform: capitalize;">Layout: ${b.layout_type} (${b.attendee_count} Tamu)</div>
+        </td>
+        <td>
+          <div style="font-weight: 600;">${dateStr}</div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">${durLabel}</div>
+        </td>
+        <td style="font-weight: 700; color: var(--gold-primary);">Rp ${Number(b.total_price).toLocaleString('id-ID')}</td>
+        <td>${payBadge}</td>
+        <td>
+          <select class="select-filter" style="width: 125px; font-weight: bold; color: ${statusColor};" 
+            onchange="updateVenueBookingStatus('${b.id}', this.value)">
+            <option value="pending" ${b.status === 'pending' ? 'selected' : ''}>Pending</option>
+            <option value="confirmed" ${b.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+            <option value="completed" ${b.status === 'completed' ? 'selected' : ''}>Completed</option>
+            <option value="cancelled" ${b.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+          </select>
+        </td>
+        <td>${actionBtns}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+async function updateVenueBookingStatus(id, newStatus, paymentStatus) {
+  if (!paymentStatus && !confirm(`Ubah status reservasi venue menjadi '${newStatus}'?`)) {
+    loadVenueBookings();
+    return;
+  }
+  
+  const bodyPayload = { status: newStatus };
+  if (paymentStatus) {
+    bodyPayload.payment_status = paymentStatus;
+  }
+  
+  try {
+    const res = await fetch(`${API_BASE}/admin/venue-bookings/${id}/status`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminState.token}`
+      },
+      body: JSON.stringify(bodyPayload)
+    });
+    
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+    
+    showToast(data.message, 'success');
+    loadVenueBookings();
+  } catch (err) {
+    showToast(err.message, 'error');
+    loadVenueBookings();
+  }
+}
+
+async function handleVerifyVenuePayment(id, code) {
+  if (!confirm(`Konfirmasi verifikasi pembayaran untuk event ${code}? Status akan otomatis CONFIRMED.`)) {
+    return;
+  }
+  await updateVenueBookingStatus(id, 'confirmed', 'paid');
 }
 
 // ============================================================

@@ -50,6 +50,10 @@
         <i class="fa-solid fa-utensils"></i>
         <span>Reservasi Restoran</span>
       </li>
+      <li class="sidebar-item" onclick="switchAdminTab('venue_bookings')" id="menu-venue_bookings">
+        <i class="fa-solid fa-hotel"></i>
+        <span>Reservasi Ballroom & MICE</span>
+      </li>
       <li class="sidebar-item" onclick="switchAdminTab('rooms')" id="menu-rooms">
         <i class="fa-solid fa-bed"></i>
         <span>Inventori Kamar</span>
@@ -269,11 +273,11 @@
         <div class="admin-card-header">
           <div>
             <h3 class="admin-card-title">Daftar Reservasi Restoran Angie</h3>
-            <p style="font-size: 0.85rem; color: var(--text-secondary);">Kelola status meja dan kedatangan tamu di restoran.</p>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">Kelola status meja, kedatangan tamu, dan verifikasi pembayaran deposit restoran.</p>
           </div>
 
           <div class="table-filter-bar">
-            <select class="select-filter" id="restaurantBookingStatusFilter" onchange="loadRestaurantBookings()">
+            <select class="select-filter" id="restaurantBookingStatusFilter" onchange="renderRestaurantBookingsTable()">
               <option value="all">Semua Status</option>
               <option value="pending">Pending</option>
               <option value="confirmed">Confirmed</option>
@@ -291,6 +295,8 @@
                 <th>Tamu & Kontak</th>
                 <th>Tanggal & Sesi</th>
                 <th>Jumlah Tamu</th>
+                <th>Deposit Meja</th>
+                <th>Status Bayar</th>
                 <th>No Meja</th>
                 <th>Permintaan Khusus</th>
                 <th>Status Booking</th>
@@ -299,8 +305,56 @@
             </thead>
             <tbody id="restaurantBookingsTableBody">
               <tr>
-                <td colspan="8" style="text-align: center; padding: 30px;">
+                <td colspan="10" style="text-align: center; padding: 30px;">
                   <i class="fa-solid fa-spinner fa-spin text-gold"></i> Memuat data reservasi restoran...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         TAB 2.6: MANAJEMEN RESERVASI BALLROOM & MICE
+         ============================================================ -->
+    <section class="tab-pane" id="pane-venue_bookings">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div>
+            <h3 class="admin-card-title">Daftar Reservasi Ballroom & MICE</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">Kelola status booking event, jadwal ruangan, dan verifikasi pembayaran venue.</p>
+          </div>
+
+          <div class="table-filter-bar">
+            <select class="select-filter" id="venueBookingStatusFilter" onchange="renderVenueBookingsTable()">
+              <option value="all">Semua Status</option>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Kode Event</th>
+                <th>Pemesan & Kontak</th>
+                <th>Venue & Layout</th>
+                <th>Tanggal & Durasi</th>
+                <th>Total Biaya</th>
+                <th>Status Bayar</th>
+                <th>Status Reservasi</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="venueBookingsTableBody">
+              <tr>
+                <td colspan="8" style="text-align: center; padding: 30px;">
+                  <i class="fa-solid fa-spinner fa-spin text-gold"></i> Memuat data reservasi venue...
                 </td>
               </tr>
             </tbody>

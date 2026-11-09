@@ -135,16 +135,26 @@
           
           <div class="form-group" style="margin-top: 20px;">
             <label for="restGuests">Jumlah Tamu <span class="text-rose">*</span></label>
-            <input type="number" class="form-control" id="restGuests" min="1" max="20" placeholder="Contoh: 2" required>
+            <input type="number" class="form-control" id="restGuests" min="1" max="20" placeholder="Contoh: 2" oninput="updateRestDepositPreview()" required>
           </div>
           
           <div class="form-group" style="margin-top: 20px;">
             <label for="restRequests">Permintaan Khusus (Opsional)</label>
             <textarea class="form-control" id="restRequests" rows="3" placeholder="Alergi makanan, kejutan ulang tahun, atau request tempat duduk..."></textarea>
           </div>
+
+          <div id="restDepositNotice" style="background: rgba(197, 160, 89, 0.08); border: 1px solid var(--gold-border); border-radius: 8px; padding: 14px 18px; margin-top: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong style="color: var(--gold-light); font-size: 0.95rem;"><i class="fa-solid fa-shield-halved"></i> Deposit Komitmen Meja:</strong>
+                <p style="margin: 3px 0 0; font-size: 0.8rem; color: var(--text-secondary);">Rp 50.000 / orang (Min. Rp 100.000) • Memotong tagihan saat makan</p>
+              </div>
+              <span id="restDepositAmount" style="font-weight: 700; color: var(--gold-primary); font-size: 1.15rem;">Rp 100.000</span>
+            </div>
+          </div>
           
-          <button type="submit" class="btn btn-gold btn-block" style="margin-top: 30px; font-size: 1.1rem; padding: 14px;">
-            Konfirmasi Reservasi Meja
+          <button type="submit" class="btn btn-gold btn-block" style="margin-top: 25px; font-size: 1.1rem; padding: 14px;">
+            <i class="fa-solid fa-lock"></i> Konfirmasi & Lanjut ke Pembayaran Deposit
           </button>
         </form>
       </div>
@@ -226,6 +236,44 @@
     </div>
   </div>
 
+  <!-- C. PAYMENT MODAL (Simulasi Pembayaran) -->
+  <div class="modal-overlay" id="paymentModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title font-serif">Pembayaran Reservasi</h3>
+        <button class="modal-close" onclick="closeModal('paymentModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="paymentDetailsArea" style="margin-bottom: 24px; text-align: center;">
+          <!-- Populated by JS -->
+        </div>
+
+        <div class="form-group" style="margin-bottom: 24px;">
+          <label class="form-label"><i class="fa-solid fa-wallet text-gold"></i> Pilih Metode Pembayaran</label>
+          <select id="paymentMethodSelect" class="form-control" onchange="renderPaymentInstructions()">
+            <option value="bank_transfer">BCA / Mandiri Virtual Account</option>
+            <option value="ewallet">QRIS / GoPay / OVO / Dana</option>
+            <option value="credit_card">Kartu Kredit / Debit Visa & Mastercard</option>
+            <option value="cash">Bayar Langsung Saat Check-in di Hotel / Kasir</option>
+          </select>
+        </div>
+
+        <div id="paymentInstructionsBox" style="background: var(--bg-surface-elevated); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 24px; border: 1px solid var(--gold-border);">
+          <!-- Render QR or VA info -->
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 16px;">
+          <button class="btn btn-gold" style="flex: 2;" id="confirmPayBtn" onclick="handleProcessPayment()">
+            <i class="fa-solid fa-circle-check"></i> Konfirmasi Pembayaran
+          </button>
+          <button class="btn btn-outline-danger" style="flex: 1;" id="cancelBookingBtn" onclick="closeModal('paymentModal')">
+            <i class="fa-solid fa-ban"></i> Nanti Saja
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- E. MY BOOKINGS MODAL (Riwayat Tamu) -->
   <div class="modal-overlay" id="myBookingsModal">
     <div class="modal-content" style="max-width: 760px;">
@@ -272,6 +320,13 @@
         }).catch(err => console.error(err));
     });
 
+    function updateRestDepositPreview() {
+      const guests = parseInt(document.getElementById('restGuests').value, 10) || 1;
+      const amount = Math.max(100000, guests * 50000);
+      const el = document.getElementById('restDepositAmount');
+      if (el) el.innerText = 'Rp ' + amount.toLocaleString('id-ID');
+    }
+
     async function handleRestaurantBooking(e) {
       e.preventDefault();
       
@@ -302,11 +357,17 @@
         const data = await res.json();
         if(!res.ok) throw new Error(data.message);
         
-        showToast('Reservasi meja berhasil! Kode Booking: ' + data.data.reservation.reservation_code, 'success');
+        showToast('Reservasi meja berhasil diajukan! Silakan lanjutkan pembayaran deposit.', 'success');
         document.getElementById('restaurantBookingForm').reset();
+        updateRestDepositPreview();
         
-        // Buka bukti reservasi (E-Voucher)
-        if (typeof openRestaurantVoucher === 'function') {
+        // Buka Modal Pembayaran Deposit Meja
+        if (typeof openPaymentModal === 'function') {
+          openPaymentModal({
+            type: 'restaurant',
+            reservation: data.data.reservation
+          });
+        } else if (typeof openRestaurantVoucher === 'function') {
           openRestaurantVoucher(data.data.reservation);
         }
       } catch (err) {
