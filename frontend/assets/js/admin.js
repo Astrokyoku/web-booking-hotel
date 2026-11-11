@@ -152,10 +152,10 @@ function switchAdminTab(tabId) {
   const titles = {
     dashboard: { title: 'Dashboard & Analitik', sub: 'Pantau performa reservasi, okupansi kamar, dan revenue hotel secara real-time.' },
     bookings: { title: 'Manajemen Reservasi Kamar', sub: 'Kelola status tamu (Check-in, Check-out, Konfirmasi, Pembatalan) secara real-time.' },
-    restaurant_bookings: { title: 'Reservasi Restoran', sub: 'Kelola pemesanan meja, kedatangan tamu, dan verifikasi pembayaran deposit restoran.' },
-    venue_bookings: { title: 'Reservasi Ballroom & MICE', sub: 'Kelola pemesanan ballroom, ruang rapat, jadwal event, dan verifikasi pembayaran MICE.' },
+    restaurant_bookings: { title: 'Reservasi Andrawina Restaurant', sub: 'Kelola pemesanan meja, kedatangan tamu, dan verifikasi pembayaran deposit restoran.' },
+    venue_bookings: { title: 'Reservasi Ballroom & MICE (Lt. 2)', sub: 'Kelola pemesanan ballroom, ruang rapat, jadwal event, dan verifikasi pembayaran MICE.' },
     rooms: { title: 'Inventori Kamar', sub: 'Pantau ketersediaan kamar, kamar terisi, dan atur status pemeliharaan (maintenance).' },
-    guests: { title: 'Direktori Tamu', sub: 'Daftar seluruh tamu yang memiliki akun di LUXURY Hotel & Resort.' },
+    guests: { title: 'Direktori Tamu', sub: 'Daftar seluruh tamu yang memiliki akun di Pakubuwono Edhotel — SMKN 30 Jakarta.' },
     reviews: { title: 'Ulasan & Rating Tamu', sub: 'Pantau nilai kepuasan tamu dan kelola seluruh ulasan hotel.' },
   };
 
@@ -234,9 +234,14 @@ async function loadDashboardStats() {
           <td><strong>Rp ${Number(b.total_price).toLocaleString('id-ID')}</strong></td>
           <td><span class="badge ${badgeClass}">${b.booking_status}</span></td>
           <td>
-            <button class="btn btn-outline-gold btn-sm" onclick="switchAdminTab('bookings')" title="Kelola di Tab Reservasi">
-              <i class="fa-solid fa-sliders"></i> Kelola
-            </button>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <button class="btn btn-outline-gold btn-sm" onclick="openAdminReservationForm('${b.id}')" title="Lihat & Cetak Official Reservation Form">
+                <i class="fa-solid fa-file-contract"></i> Reservation Form
+              </button>
+              <button class="btn btn-outline-gold btn-sm" onclick="switchAdminTab('bookings')" title="Kelola di Tab Reservasi">
+                <i class="fa-solid fa-sliders"></i> Kelola
+              </button>
+            </div>
           </td>
         </tr>
       `;
@@ -346,7 +351,10 @@ async function loadBookings() {
           <td>${payBadge}</td>
           <td><span class="badge ${badgeClass}">${b.booking_status}</span></td>
           <td>
-            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+              <button class="btn btn-outline-gold btn-sm" onclick="openAdminReservationForm('${b.id}')" title="Lihat & Cetak Official Reservation Form (Standar Edhotel)">
+                <i class="fa-solid fa-file-contract"></i> Reservation Form
+              </button>
               ${actionButtons}
             </div>
           </td>
@@ -1099,4 +1107,342 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+// ============================================================
+// 9. OFFICIAL RESERVATION FORM (STANDAR PAKUBUWONO EDHOTEL)
+// ============================================================
+
+function parseAdminReservationMeta(booking) {
+  const raw = String(booking?.special_requests || '');
+  const match = raw.match(/\[RESFORM_META:(\{.*\})\]/s);
+  let parsed = {};
+  if (match && match[1]) {
+    try {
+      parsed = JSON.parse(match[1]);
+    } catch (e) {
+      parsed = {};
+    }
+  }
+  const cleanRemarks = raw.replace(/\n?\[RESFORM_META:\{.*\}\]/s, '').trim();
+  const roomName = booking?.room_type_name || '';
+  const defaultBed = /superior|deluxe/i.test(roomName) ? 'TW' : 'KS';
+
+  const payMethodMap = {
+    bank_transfer: 'Bank Transfer / Virtual Account BCA & Mandiri',
+    ewallet: 'QRIS / E-Wallet (GoPay, OVO, Dana)',
+    credit_card: 'Credit Card / Debit Visa & Mastercard',
+    cash: 'Cash / Pelunasan di Front Desk Resepsionis',
+  };
+  const defaultBilling = payMethodMap[booking?.payment_method] || 'Personal Account (Tamu Pribadi)';
+
+  const isCancelled = (booking?.booking_status || booking?.status) === 'cancelled';
+  const isConfirmed = ['confirmed', 'checked_in', 'completed'].includes(booking?.booking_status || booking?.status) || booking?.payment_status === 'paid';
+
+  const createdDateStr = booking?.created_at
+    ? new Date(booking.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+    : new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+
+  const confirmedDateStr = isConfirmed
+    ? (booking?.paid_at
+        ? new Date(booking.paid_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+        : createdDateStr)
+    : '';
+
+  const adminName = adminState.user?.full_name || 'Admin Pakubuwono Edhotel';
+
+  return {
+    remarks: cleanRemarks || 'Tidak ada catatan khusus',
+    bed_type: parsed.bed_type || defaultBed,
+    address: parsed.address || 'Jakarta, Indonesia',
+    company: parsed.company || '-',
+    arr_flight: parsed.arr_flight || '-',
+    eta: parsed.eta ? `${parsed.eta} WIB` : '14:00 WIB',
+    dep_flight: parsed.dep_flight || '-',
+    etd: parsed.etd ? `${parsed.etd} WIB` : '12:00 WIB',
+    billing: parsed.billing || defaultBilling,
+    res_by: parsed.res_by || 'OTA',
+    form_status: parsed.form_status || (isCancelled ? 'Cancellation' : 'New Booking'),
+    accepted_by: parsed.accepted_by || 'FO Reservation System',
+    accepted_date: parsed.accepted_date || createdDateStr,
+    confirmed_by: parsed.confirmed_by || (isConfirmed ? adminName : ''),
+    confirmed_date: parsed.confirmed_date || confirmedDateStr,
+  };
+}
+
+function renderAdminOfficialReservationFormHTML(b, p) {
+  const meta = parseAdminReservationMeta(b);
+  const activeStatus = adminState.resFormOverrideStatus || meta.form_status;
+  const activeResBy = adminState.resFormOverrideResBy || meta.res_by;
+  const activeBed = adminState.resFormOverrideBed || meta.bed_type;
+
+  const roomRows = [
+    { label: 'Superior', matchKey: 'Superior Room', rateIdr: 785000, rateUsd: 50 },
+    { label: 'Deluxe', matchKey: 'Deluxe Room', rateIdr: 1020000, rateUsd: 65 },
+    { label: 'Executive', matchKey: 'Executive Room', rateIdr: 1255000, rateUsd: 80 },
+    { label: 'Junior Suite', matchKey: 'Junior Suite Room', rateIdr: 1490000, rateUsd: 95 },
+    { label: 'Suite', matchKey: 'Suite Room', rateIdr: 1725000, rateUsd: 110 },
+    { label: 'Presedential', matchKey: 'Presidential Suite', rateIdr: 3925000, rateUsd: 250 },
+  ];
+
+  const resByOptions = ['Phone', 'Letter', 'Email', 'Personal', 'OTA', 'Others'];
+  const dottedLineStyle = 'border-bottom: 1.5px dotted #1e293b; display: inline-block; padding: 0 6px 1px; font-weight: 600; color: #0f172a; min-height: 20px;';
+
+  return `
+    <div class="official-resform-sheet" style="font-family: 'Times New Roman', Georgia, serif; color: #000000; background: #ffffff; padding: 10px 14px; line-height: 1.45; font-size: 0.95rem;">
+      <!-- 1. TOP HEADER -->
+      <div style="display: grid; grid-template-columns: 190px 1fr 220px; align-items: center; margin-bottom: 18px;">
+        <div style="text-align: center;">
+          <img src="assets/images/logo-emblem.png" alt="Pakubuwono Edotel" style="height: 46px; width: auto; object-fit: contain; display: block; margin: 0 auto 2px;">
+          <div style="font-family: 'Playfair Display', 'Times New Roman', serif; font-weight: 800; font-size: 1.02rem; letter-spacing: 1.5px; color: #b89146; line-height: 1.1;">PAKUBUWONO</div>
+          <div style="font-size: 0.68rem; font-weight: 700; letter-spacing: 2px; color: #b89146; line-height: 1.15;">EDOTEL</div>
+          <div style="font-size: 0.52rem; font-weight: 700; letter-spacing: 1.2px; color: #b89146;">SMKN 30 JAKARTA</div>
+        </div>
+        <div style="text-align: center;">
+          <h2 style="font-family: 'Times New Roman', Georgia, serif; font-size: 1.5rem; font-weight: 400; letter-spacing: 1px; margin: 0; color: #000;">RESERVATION FORM</h2>
+        </div>
+        <div style="text-align: right; align-self: end; font-size: 0.92rem;">
+          <span>Reservation No. : </span>
+          <span style="${dottedLineStyle} min-width: 110px; text-align: center; font-family: monospace; font-size: 0.92rem;">${b.booking_code}</span>
+        </div>
+      </div>
+
+      <!-- 2. THREE STATUS BOXES -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin: 14px 0 24px; padding: 0 6px;">
+        ${['New Booking', 'Amandement', 'Cancellation'].map(st => {
+          const isChecked = activeStatus === st;
+          return `
+            <div style="text-align: center; cursor: pointer; user-select: none;" onclick="toggleAdminResFormBox('status', '${st}')" title="Klik untuk memilih status ${st}">
+              <div style="width: 124px; height: 32px; border: 1.5px solid #000; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 800; color: #0f172a; background: ${isChecked ? 'rgba(197, 160, 89, 0.14)' : '#fff'};">
+                ${isChecked ? '&#10003;' : ''}
+              </div>
+              <div style="font-size: 0.92rem; margin-top: 4px; color: #000;">${st}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      <!-- 3. GUEST NAME, PAX, ARRIVAL & DEPARTURE -->
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+        <div style="display: flex; align-items: baseline;">
+          <span style="width: 145px; flex-shrink: 0;">Name of Guest</span>
+          <span style="margin-right: 6px;">:</span>
+          <span style="${dottedLineStyle} flex: 1;">${b.guest_name} (Room #${b.room_number} - Floor ${b.floor})</span>
+        </div>
+
+        <div style="display: flex; align-items: baseline;">
+          <span style="width: 145px; flex-shrink: 0;">Number of Person</span>
+          <span style="margin-right: 6px;">:</span>
+          <span style="${dottedLineStyle} width: 90px; text-align: center;">${b.guest_count || 2} Adult</span>
+          <span style="margin: 0 4px; font-weight: 700;">/</span>
+          <span style="${dottedLineStyle} width: 120px; text-align: center;">0 Child (${b.total_nights} Night${b.total_nights > 1 ? 's' : ''})</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1.2fr 1fr 0.9fr; gap: 12px; align-items: baseline; margin-top: 6px;">
+          <div style="display: flex; align-items: baseline;">
+            <span style="width: 90px; flex-shrink: 0;">Arrival</span>
+            <span style="margin-right: 6px;">:</span>
+            <span style="${dottedLineStyle} flex: 1; text-align: center;">${b.check_in_date}</span>
+          </div>
+          <div style="display: flex; align-items: baseline;">
+            <span style="width: 78px; flex-shrink: 0;">Flight No.</span>
+            <span style="margin-right: 6px;">:</span>
+            <span style="${dottedLineStyle} flex: 1; text-align: center;">${meta.arr_flight}</span>
+          </div>
+          <div style="display: flex; align-items: baseline;">
+            <span style="width: 48px; flex-shrink: 0;">ETA</span>
+            <span style="margin-right: 6px;">:</span>
+            <span style="${dottedLineStyle} flex: 1; text-align: center;">${meta.eta}</span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1.2fr 1fr 0.9fr; gap: 12px; align-items: baseline;">
+          <div style="display: flex; align-items: baseline;">
+            <span style="width: 90px; flex-shrink: 0;">Departure</span>
+            <span style="margin-right: 6px;">:</span>
+            <span style="${dottedLineStyle} flex: 1; text-align: center;">${b.check_out_date}</span>
+          </div>
+          <div style="display: flex; align-items: baseline;">
+            <span style="width: 78px; flex-shrink: 0;">Flight No.</span>
+            <span style="margin-right: 6px;">:</span>
+            <span style="${dottedLineStyle} flex: 1; text-align: center;">${meta.dep_flight}</span>
+          </div>
+          <div style="display: flex; align-items: baseline;">
+            <span style="width: 48px; flex-shrink: 0;">ETD</span>
+            <span style="margin-right: 6px;">:</span>
+            <span style="${dottedLineStyle} flex: 1; text-align: center;">${meta.etd}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. TWO TABLES: RESERVATION BY & TYPE OF ROOM -->
+      <div style="display: grid; grid-template-columns: 185px 1fr; gap: 24px; margin-bottom: 22px; align-items: start;">
+        <table style="width: 100%; border-collapse: collapse; border: 1.2px solid #000; font-size: 0.88rem;">
+          <thead>
+            <tr>
+              <th colspan="2" style="border: 1px solid #000; padding: 4px 8px; text-align: center; font-weight: 600;">Reservation by</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${resByOptions.map(opt => {
+              const isChecked = activeResBy.toLowerCase() === opt.toLowerCase();
+              return `
+                <tr style="cursor: pointer;" onclick="toggleAdminResFormBox('resBy', '${opt}')" title="Klik untuk memilih ${opt}">
+                  <td style="border: 1px solid #000; padding: 3px 8px; text-align: center; width: 76%;">${opt}</td>
+                  <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: 800; background: ${isChecked ? 'rgba(197, 160, 89, 0.16)' : '#fff'};">${isChecked ? '&#10003;' : ''}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+
+        <table style="width: 100%; border-collapse: collapse; border: 1.2px solid #000; font-size: 0.88rem;">
+          <thead>
+            <tr>
+              <th colspan="2" style="border: 1px solid #000; padding: 4px 8px; text-align: center; font-weight: 600;">Type of Room</th>
+              <th style="border: 1px solid #000; padding: 4px 8px; text-align: center; font-weight: 600; width: 92px;">Bed Type</th>
+              <th style="border: 1px solid #000; padding: 4px 8px; text-align: center; font-weight: 600;">Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${roomRows.map(r => {
+              const isSelectedRoom = (b.room_type_name || '').toLowerCase() === r.matchKey.toLowerCase();
+              const bedDisplay = isSelectedRoom
+                ? `<span style="cursor:pointer;" onclick="toggleAdminResFormBox('bed', '${activeBed === 'TW' ? 'KS' : 'TW'}')" title="Klik untuk ganti TW/KS">
+                     <strong style="${activeBed === 'TW' ? 'border: 1.5px solid #000; border-radius: 10px; padding: 0 4px; background: rgba(197,160,89,0.2);' : 'color: #64748b;'}">TW</strong>/<strong style="${activeBed === 'KS' ? 'border: 1.5px solid #000; border-radius: 10px; padding: 0 4px; background: rgba(197,160,89,0.2);' : 'color: #64748b;'}">KS</strong>
+                   </span>`
+                : 'TW/KS';
+
+              const rateDisplay = isSelectedRoom
+                ? `<strong>Rp ${r.rateIdr.toLocaleString('id-ID')} ($${r.rateUsd}) / night</strong>`
+                : `<span style="color: #64748b; font-size: 0.8rem;">Rp ${r.rateIdr.toLocaleString('id-ID')} ($${r.rateUsd})</span>`;
+
+              return `
+                <tr style="background: ${isSelectedRoom ? 'rgba(197, 160, 89, 0.14)' : '#fff'};">
+                  <td style="border: 1px solid #000; padding: 3px 10px; text-align: center; width: 34%; font-weight: ${isSelectedRoom ? '700' : '400'};">${r.label}</td>
+                  <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; width: 36px; font-weight: 800;">${isSelectedRoom ? '&#10003;' : ''}</td>
+                  <td style="border: 1px solid #000; padding: 3px 6px; text-align: center;">${bedDisplay}</td>
+                  <td style="border: 1px solid #000; padding: 3px 10px; text-align: center;">${rateDisplay}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 5. COMPANY, ADDRESS, EMAIL, PHONE, REMARKS & BILLING -->
+      <div style="display: flex; flex-direction: column; gap: 9px; margin-bottom: 24px;">
+        <div style="display: flex; align-items: baseline;">
+          <span style="width: 145px; flex-shrink: 0;">Company Name</span>
+          <span style="margin-right: 6px;">:</span>
+          <span style="${dottedLineStyle} flex: 1;">${meta.company}</span>
+        </div>
+
+        <div style="display: flex; align-items: baseline;">
+          <span style="width: 145px; flex-shrink: 0;">Address</span>
+          <span style="margin-right: 6px;">:</span>
+          <span style="${dottedLineStyle} flex: 1;">${meta.address}</span>
+        </div>
+
+        <div style="display: flex; align-items: baseline;">
+          <span style="width: 145px; flex-shrink: 0;"></span>
+          <span style="margin-right: 6px; visibility: hidden;">:</span>
+          <span style="${dottedLineStyle} flex: 1;">&nbsp;</span>
+        </div>
+
+        <div style="display: flex; align-items: baseline;">
+          <span style="width: 145px; flex-shrink: 0;">Email</span>
+          <span style="margin-right: 6px;">:</span>
+          <span style="${dottedLineStyle} flex: 1;">${b.guest_email}</span>
+        </div>
+
+        <div style="display: flex; align-items: baseline;">
+          <span style="width: 145px; flex-shrink: 0;">Phone Number</span>
+          <span style="margin-right: 6px;">:</span>
+          <span style="${dottedLineStyle} flex: 1;">${b.guest_phone || '-'}</span>
+        </div>
+
+        <div style="display: flex; align-items: baseline;">
+          <span style="width: 145px; flex-shrink: 0;">Remarks</span>
+          <span style="margin-right: 6px;">:</span>
+          <span style="${dottedLineStyle} flex: 1;">${meta.remarks}</span>
+        </div>
+
+        <div style="display: flex; align-items: baseline;">
+          <span style="width: 145px; flex-shrink: 0;">Billing Instruction</span>
+          <span style="margin-right: 6px;">:</span>
+          <span style="${dottedLineStyle} flex: 1;">${meta.billing} — Total (Inc. 12% Tax): Rp ${Number(p.total_price).toLocaleString('id-ID')} (${b.payment_status === 'paid' ? 'PAID' : 'UNPAID'})</span>
+        </div>
+      </div>
+
+      <!-- 6. FOOTER SIGN-OFF -->
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px; padding-top: 6px;">
+        <div style="display: grid; grid-template-columns: 1.25fr 1fr; gap: 24px; align-items: baseline;">
+          <div style="display: flex; align-items: baseline;">
+            <span style="width: 135px; flex-shrink: 0;">Accepted by</span>
+            <span style="margin-right: 6px;">:</span>
+            <span style="${dottedLineStyle} flex: 1; text-align: center;">${meta.accepted_by}</span>
+          </div>
+          <div style="display: flex; align-items: baseline;">
+            <span style="width: 55px; flex-shrink: 0;">Date</span>
+            <span style="margin-right: 6px;">:</span>
+            <span style="${dottedLineStyle} flex: 1; text-align: center;">${meta.accepted_date}</span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1.25fr 1fr; gap: 24px; align-items: baseline;">
+          <div style="display: flex; align-items: baseline;">
+            <span style="width: 135px; flex-shrink: 0;">Confirmation by</span>
+            <span style="margin-right: 6px;">:</span>
+            <span style="${dottedLineStyle} flex: 1; text-align: center;">${meta.confirmed_by || '&nbsp;'}</span>
+          </div>
+          <div style="display: flex; align-items: baseline;">
+            <span style="width: 55px; flex-shrink: 0;">Date</span>
+            <span style="margin-right: 6px;">:</span>
+            <span style="${dottedLineStyle} flex: 1; text-align: center;">${meta.confirmed_date || '&nbsp;'}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function toggleAdminResFormBox(type, value) {
+  if (type === 'status') adminState.resFormOverrideStatus = value;
+  if (type === 'resBy') adminState.resFormOverrideResBy = value;
+  if (type === 'bed') adminState.resFormOverrideBed = value;
+  if (adminState.activeResFormBooking) {
+    const printArea = document.getElementById('adminResFormPrintArea');
+    if (printArea) {
+      printArea.innerHTML = renderAdminOfficialReservationFormHTML(
+        adminState.activeResFormBooking.booking,
+        adminState.activeResFormBooking.pricing
+      );
+    }
+  }
+}
+
+async function openAdminReservationForm(bookingIdOrCode) {
+  try {
+    const res = await fetch(`${API_BASE}/bookings/${bookingIdOrCode}`, {
+      headers: { 'Authorization': `Bearer ${adminState.token}` },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Gagal memuat data Reservation Form');
+
+    const b = data.data.booking;
+    const p = data.data.pricing_breakdown;
+    adminState.activeResFormBooking = { booking: b, pricing: p };
+    adminState.resFormOverrideStatus = null;
+    adminState.resFormOverrideResBy = null;
+    adminState.resFormOverrideBed = null;
+
+    const printArea = document.getElementById('adminResFormPrintArea');
+    if (printArea) {
+      printArea.innerHTML = renderAdminOfficialReservationFormHTML(b, p);
+    }
+    openAdminModal('adminReservationFormModal');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
 }

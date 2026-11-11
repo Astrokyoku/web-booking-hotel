@@ -17,7 +17,7 @@ const generateServiceCode = (prefix) => {
 };
 
 // ============================================================
-// RESTAURANT ANGIE
+// ANDRAWINA RESTAURANT (1ST FLOOR)
 // ============================================================
 
 /**
@@ -303,11 +303,17 @@ const getMyRestaurantBookings = async (req, res) => {
  */
 const getHotelFacilities = async (req, res) => {
   try {
-    const result = await query('SELECT * FROM hotel_facilities ORDER BY category, title ASC');
+    const result = await query('SELECT * FROM hotel_facilities ORDER BY created_at ASC');
+    const facilities = result.rows.map((f) => {
+      if (/kids|playground/i.test(f.title || '')) {
+        return { ...f, image_url: 'assets/images/facility-kids-playground.jpg' };
+      }
+      return f;
+    });
     return res.status(200).json({
       status: 'SUCCESS',
       message: 'Berhasil mengambil data fasilitas hotel',
-      data: { facilities: result.rows },
+      data: { facilities },
     });
   } catch (error) {
     console.error('❌ Error getHotelFacilities:', error.message);

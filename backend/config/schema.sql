@@ -37,6 +37,12 @@ CREATE TABLE IF NOT EXISTS room_types (
     name            VARCHAR(100) NOT NULL,
     description     TEXT,
     base_price      DECIMAL(12, 2) NOT NULL CHECK (base_price > 0),
+    price_usd       DECIMAL(10, 2) DEFAULT 50.00,
+    room_size       VARCHAR(50),
+    bed_type        VARCHAR(100),
+    bathroom_details TEXT,
+    tv_details      VARCHAR(150),
+    interior_design TEXT,
     capacity        INTEGER NOT NULL DEFAULT 2 CHECK (capacity > 0),
     amenities       TEXT[],          -- Array of text: {'WiFi', 'AC', 'Breakfast', 'Bathtub'}
     image_url       VARCHAR(500),

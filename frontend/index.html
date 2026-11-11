@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="LUXURY Hotel & Resort - Nikmati pengalaman menginap bintang 5 tak terlupakan dengan pemandangan eksklusif, fasilitas kelas dunia, dan kenyamanan sempurna.">
-  <meta name="keywords" content="hotel luxury, luxury resort, booking hotel, reservasi hotel bintang 5, kamar mewah">
-  <title>LUXURY Hotel & Resort — Sanctuary of Elegance</title>
+  <meta name="description" content="PAKUBUWONO EDHOTEL (SMKN 30 Jakarta) - Hotel strategis di pusat kota Jakarta kawasan Senayan, dekat Gelora Bung Karno, Senayan City, Plaza Senayan, dan fX Sudirman.">
+  <meta name="keywords" content="pakubuwono edhotel, edotel smkn 30 jakarta, hotel senayan jakarta, booking hotel jakarta, andrawina restaurant">
+  <title>PAKUBUWONO EDHOTEL — SMKN 30 Jakarta | Senayan</title>
 
   <!-- Favicon -->
-  <link rel="icon" href="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=64&h=64&fit=crop" type="image/jpeg">
+  <link rel="icon" href="assets/images/logo-emblem.png" type="image/png">
 
   <!-- Google Fonts & Stylesheet -->
-  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/style.css?v=4">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -22,14 +22,17 @@
   <nav class="navbar" id="navbar">
     <div class="container nav-wrapper">
       <a href="index.html" class="brand-logo">
-        <span class="brand-title">LUXURY</span>
-        <span class="brand-subtitle">HOTEL & RESORT</span>
+        <img src="assets/images/logo-emblem.png" alt="Logo Pakubuwono Edhotel" class="brand-logo-img">
+        <div class="brand-logo-text">
+          <span class="brand-title">PAKUBUWONO</span>
+          <span class="brand-subtitle">EDHOTEL • SMKN 30 JAKARTA</span>
+        </div>
       </a>
 
       <ul class="nav-menu">
         <li><a href="index.html#rooms" class="nav-link">Kamar & Suite</a></li>
-        <li><a href="restaurant.html" class="nav-link">Restoran Angie</a></li>
-        <li><a href="facilities.html" class="nav-link">Fasilitas Mewah</a></li>
+        <li><a href="restaurant.html" class="nav-link">Andrawina Restaurant</a></li>
+        <li><a href="facilities.html" class="nav-link">Fasilitas Hotel</a></li>
         <li><a href="mice.html" class="nav-link">MICE & Ballroom</a></li>
       </ul>
 
@@ -55,8 +58,11 @@
   <aside class="mobile-nav-drawer" id="mobileNavDrawer" aria-label="Menu Navigasi Mobile">
     <div class="drawer-header">
       <a href="index.html" class="brand-logo" onclick="closeMobileNav()">
-        <span class="brand-title">LUXURY</span>
-        <span class="brand-subtitle">HOTEL & RESORT</span>
+        <img src="assets/images/logo-emblem.png" alt="Logo Pakubuwono Edhotel" class="brand-logo-img">
+        <div class="brand-logo-text">
+          <span class="brand-title">PAKUBUWONO</span>
+          <span class="brand-subtitle">EDHOTEL • SMKN 30 JAKARTA</span>
+        </div>
       </a>
       <button class="drawer-close-btn" onclick="closeMobileNav()" aria-label="Tutup Menu">
         <i class="fa-solid fa-xmark"></i>
@@ -71,8 +77,8 @@
     <!-- Navigation Links in Drawer -->
     <ul class="drawer-menu">
       <li><a href="index.html#rooms" class="drawer-link" onclick="closeMobileNav()"><i class="fa-solid fa-bed text-gold"></i> <span>Kamar & Suite</span></a></li>
-      <li><a href="restaurant.html" class="drawer-link" onclick="closeMobileNav()"><i class="fa-solid fa-utensils text-gold"></i> <span>Restoran Angie</span></a></li>
-      <li><a href="facilities.html" class="drawer-link" onclick="closeMobileNav()"><i class="fa-solid fa-spa text-gold"></i> <span>Fasilitas Mewah</span></a></li>
+      <li><a href="restaurant.html" class="drawer-link" onclick="closeMobileNav()"><i class="fa-solid fa-utensils text-gold"></i> <span>Andrawina Restaurant</span></a></li>
+      <li><a href="facilities.html" class="drawer-link" onclick="closeMobileNav()"><i class="fa-solid fa-spa text-gold"></i> <span>Fasilitas Hotel</span></a></li>
       <li><a href="mice.html" class="drawer-link" onclick="closeMobileNav()"><i class="fa-solid fa-handshake text-gold"></i> <span>MICE & Ballroom</span></a></li>
     </ul>
 
@@ -80,11 +86,11 @@
     <div class="drawer-footer">
       <div class="drawer-contact-item">
         <i class="fa-solid fa-phone text-gold"></i>
-        <span>+62 21 555-LUXURY (Concierge 24/7)</span>
+        <span>+62 21 722-3030 (Resepsionis 24/7)</span>
       </div>
       <div class="drawer-contact-item">
         <i class="fa-solid fa-location-dot text-gold"></i>
-        <span>Jl. Pantai Indah Kapuk No. 88, Jakarta</span>
+        <span>Jl. Pakubuwono VI, Senayan - Kebayoran Baru, Jakarta</span>
       </div>
     </div>
   </aside>
@@ -95,9 +101,14 @@
   <header class="hero">
     <div class="container">
       <div class="hero-content">
-        <span class="hero-tag"><i class="fa-solid fa-crown"></i> Sanctuary of World-Class Luxury</span>
-        <h1 class="hero-headline">Keanggunan Abadi Dalam Setiap Sudut Penginapan</h1>
-        <p class="hero-subhead">Temukan kenyamanan eksklusif bintang lima, pemandangan laut spektakuler, dan keramahtamahan istimewa yang dirancang khusus untuk Anda.</p>
+        <div style="margin-bottom: 18px;">
+          <img src="assets/images/logo-pakubuwono.png" alt="Pakubuwono Edotel SMKN 30 Jakarta" style="height: 115px; width: auto; margin: 0 auto; filter: drop-shadow(0 6px 20px rgba(0,0,0,0.75));">
+        </div>
+        <span class="hero-tag"><i class="fa-solid fa-location-dot"></i> Center of Jakarta • Senayan Venue & Hospitality</span>
+        <h1 class="hero-headline" style="font-size: 3.3rem;">PAKUBUWONO EDHOTEL</h1>
+        <p class="hero-subhead" style="max-width: 860px; font-size: 1.08rem; line-height: 1.7;">
+          Berlokasi strategis di pusat kota Jakarta kawasan Senayan, hotel kami adalah venue sempurna untuk seluruh acara dan momen istimewa Anda. Tim banquet dan event kami siap membantu merancang pengalaman tak terlupakan, sementara tim kuliner unggulan kami menawarkan fleksibilitas dalam menyajikan menu terbaik. Hanya beberapa langkah dari <strong>Stadion Gelora Bung Karno (GBK)</strong>, <strong>Senayan Driving Range</strong>, <strong>Senayan National Golf Club</strong>, serta pusat perbelanjaan prestisius seperti <strong>Senayan City</strong>, <strong>Plaza Senayan</strong>, dan <strong>fX Sudirman</strong>.
+        </p>
       </div>
 
       <!-- Real-time Availability Engine Bar -->
@@ -126,7 +137,6 @@
               <option value="2" selected>2 Orang Tamu</option>
               <option value="3">3 Orang Tamu</option>
               <option value="4">4 Orang Tamu</option>
-              <option value="5">5+ Tamu (Family)</option>
             </select>
           </div>
 
@@ -135,11 +145,13 @@
               <i class="fa-solid fa-tag text-gold"></i> Maks. Tarif
             </label>
             <select id="searchMaxPrice" class="form-control">
-              <option value="">Semua Tarif</option>
-              <option value="600000">Di bawah Rp 600 Ribu</option>
-              <option value="1000000">Di bawah Rp 1 Juta</option>
-              <option value="2000000">Di bawah Rp 2 Juta</option>
-              <option value="3000000">Di atas Rp 2 Juta</option>
+              <option value="">Semua Tarif (Rp 785rb – Rp 3,925jt)</option>
+              <option value="800000">Superior (≤ Rp 785.000 / $50)</option>
+              <option value="1100000">Deluxe (≤ Rp 1.020.000 / $65)</option>
+              <option value="1300000">Executive (≤ Rp 1.255.000 / $80)</option>
+              <option value="1500000">Junior Suite (≤ Rp 1.490.000 / $95)</option>
+              <option value="1800000">Suite (≤ Rp 1.725.000 / $110)</option>
+              <option value="4000000">Presidential Suite (≤ Rp 3.925.000 / $250)</option>
             </select>
           </div>
 
@@ -159,9 +171,46 @@
   <section id="rooms" class="section-rooms">
     <div class="container">
       <div style="text-align: center;">
-        <span class="section-tag">Akomodasi Pilihan</span>
-        <h2 class="section-title">Kamar & Suite Eksklusif</h2>
-        <p class="section-desc" id="roomsSubtitle">Pilihan akomodasi mewah dengan fasilitas modern berstandar internasional dan pemandangan luar biasa.</p>
+        <span class="section-tag">Bedroom Type & Rates</span>
+        <h2 class="section-title">Tipe Kamar & Tarif Menginap</h2>
+        <p class="section-desc" id="roomsSubtitle">6 pilihan akomodasi elegan Pakubuwono Edhotel mulai dari Superior Room hingga Presidential Suite dengan standar kenyamanan terbaik di Senayan.</p>
+      </div>
+
+      <!-- Tabel Ringkasan Harga Resmi (IDR & USD) sesuai PDF -->
+      <div style="margin-top: 32px; overflow-x: auto; background: var(--bg-surface-elevated); border: 1px solid var(--gold-border); border-radius: var(--radius-md); padding: 18px;">
+        <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 0.9rem; min-width: 720px;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--gold-border); color: var(--gold-light); background: rgba(197, 160, 89, 0.1);">
+              <th style="padding: 12px 14px; text-align: left;">Mata Uang</th>
+              <th style="padding: 12px 14px;">1. Superior</th>
+              <th style="padding: 12px 14px;">2. Deluxe</th>
+              <th style="padding: 12px 14px;">3. Executive</th>
+              <th style="padding: 12px 14px;">4. Junior Suite</th>
+              <th style="padding: 12px 14px;">5. Suite</th>
+              <th style="padding: 12px 14px;">6. Presidential Suite</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+              <td style="padding: 12px 14px; text-align: left; font-weight: 700; color: var(--gold-primary);">IDR / Malam</td>
+              <td style="padding: 12px 14px; font-weight: 600;">Rp 785.000</td>
+              <td style="padding: 12px 14px; font-weight: 600;">Rp 1.020.000</td>
+              <td style="padding: 12px 14px; font-weight: 600;">Rp 1.255.000</td>
+              <td style="padding: 12px 14px; font-weight: 600;">Rp 1.490.000</td>
+              <td style="padding: 12px 14px; font-weight: 600;">Rp 1.725.000</td>
+              <td style="padding: 12px 14px; font-weight: 700; color: var(--gold-light);">Rp 3.925.000</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 14px; text-align: left; font-weight: 700; color: var(--text-muted);">USD / Night</td>
+              <td style="padding: 10px 14px; color: var(--text-secondary);">$50</td>
+              <td style="padding: 10px 14px; color: var(--text-secondary);">$65</td>
+              <td style="padding: 10px 14px; color: var(--text-secondary);">$80</td>
+              <td style="padding: 10px 14px; color: var(--text-secondary);">$95</td>
+              <td style="padding: 10px 14px; color: var(--text-secondary);">$110</td>
+              <td style="padding: 10px 14px; color: var(--gold-primary); font-weight: 700;">$250</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <!-- Container tempat render kartu kamar dinamis -->
@@ -176,40 +225,92 @@
   </section>
 
   <!-- ============================================================
-       4. RESORT FACILITIES SECTION
+       4. HOTEL FACILITIES SECTION (10 FASILITAS LENGKAP)
        ============================================================ -->
   <section id="facilities" class="section-features">
     <div class="container">
       <div style="text-align: center;">
-        <span class="section-tag">Fasilitas Bintang Lima</span>
-        <h2 class="section-title">Kenyamanan Tanpa Kompromi</h2>
-        <p class="section-desc">Setiap detik di LUXURY dirancang untuk memanjakan seluruh panca indra Anda.</p>
+        <span class="section-tag">10 Hotel Facilities</span>
+        <h2 class="section-title">Fasilitas Lengkap Pakubuwono Edhotel</h2>
+        <p class="section-desc">Nikmati 10 fasilitas penunjang rekreasi, kebugaran, kuliner, bisnis, hingga keluarga yang tersebar dari Basement hingga Lantai 7.</p>
       </div>
 
-      <div class="features-grid">
+      <div class="features-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 22px;">
         <div class="feature-card">
-          <div class="feature-icon"><i class="fa-solid fa-water-ladder"></i></div>
-          <h3 class="feature-title">Infinity Sky Pool</h3>
-          <p class="feature-desc">Kolam renang tanpa batas di lantai teratas dengan pemandangan matahari terbenam yang memukau.</p>
+          <div class="feature-icon"><i class="fa-solid fa-person-swimming"></i></div>
+          <span class="facility-floor-pill"><i class="fa-solid fa-layer-group"></i> 1st Floor</span>
+          <h3 class="feature-title">1. Swimming Pool</h3>
+          <p class="feature-desc">Fasilitas rekreasi dan relaksasi air lengkap dengan kursi berjemur (sun loungers), fasilitas shower bilas, ruang ganti, dan handuk kolam.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-dumbbell"></i></div>
+          <span class="facility-floor-pill"><i class="fa-solid fa-layer-group"></i> 5th Floor</span>
+          <h3 class="feature-title">2. Fitness Center / Gym</h3>
+          <p class="feature-desc">Area olahraga khusus yang dilengkapi treadmill, sepeda statis, dumbbell, mesin beban, dan peralatan kebugaran lengkap.</p>
         </div>
 
         <div class="feature-card">
           <div class="feature-icon"><i class="fa-solid fa-utensils"></i></div>
-          <h3 class="feature-title">Michelin-Star Dining</h3>
-          <p class="feature-desc">Hidangan mahakarya kuliner internasional olahan koki bintang dunia dengan cita rasa autentik.</p>
+          <span class="facility-floor-pill"><i class="fa-solid fa-layer-group"></i> 1st Floor</span>
+          <h3 class="feature-title">3. Andrawina Restaurant</h3>
+          <p class="feature-desc">Restoran utama yang menyajikan hidangan lokal Nusantara dan internasional untuk sarapan, makan siang, dan makan malam profesional.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-briefcase"></i></div>
+          <span class="facility-floor-pill"><i class="fa-solid fa-layer-group"></i> 2nd Floor</span>
+          <h3 class="feature-title">4. Meeting Room</h3>
+          <p class="feature-desc">Ruang rapat bisnis, seminar, presentasi, dan pelatihan yang dilengkapi meja, kursi, proyektor/LED screen, sound system, dan internet.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-champagne-glasses"></i></div>
+          <span class="facility-floor-pill"><i class="fa-solid fa-layer-group"></i> 2nd Floor</span>
+          <h3 class="feature-title">5. Ballroom</h3>
+          <p class="feature-desc">Ruang perhelatan besar untuk pernikahan, konferensi, gala dinner, dan pameran lengkap dengan panggung, tata suara, lighting, & banquet.</p>
         </div>
 
         <div class="feature-card">
           <div class="feature-icon"><i class="fa-solid fa-spa"></i></div>
-          <h3 class="feature-title">Royal Wellness Spa</h3>
-          <p class="feature-desc">Perawatan relaksasi holistik eksklusif menggunakan minyak aromaterapi organik terbaik.</p>
+          <span class="facility-floor-pill"><i class="fa-solid fa-layer-group"></i> 7th Floor</span>
+          <h3 class="feature-title">6. Spa & Wellness Center</h3>
+          <p class="feature-desc">Fasilitas relaksasi yang menawarkan layanan pijat (massage), perawatan tubuh, aromaterapi, dan perawatan kecantikan untuk ketenangan Anda.</p>
         </div>
 
         <div class="feature-card">
-          <div class="feature-icon"><i class="fa-solid fa-helicopter"></i></div>
-          <h3 class="feature-title">Helipad & VIP Concierge</h3>
-          <p class="feature-desc">Layanan antar-jemput privat 24 jam dengan staf butler profesional berdedikasi tinggi.</p>
+          <div class="feature-icon"><i class="fa-solid fa-bell-concierge"></i></div>
+          <span class="facility-floor-pill"><i class="fa-solid fa-layer-group"></i> 1st Floor</span>
+          <h3 class="feature-title">7. Lobby & Lounge</h3>
+          <p class="feature-desc">Area resepsionis utama untuk check-in, check-out, dan bersantai yang dilengkapi meja resepsionis, sofa nyaman, meja, dan pusat informasi.</p>
         </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-mug-hot"></i></div>
+          <span class="facility-floor-pill"><i class="fa-solid fa-layer-group"></i> 2nd Floor</span>
+          <h3 class="feature-title">8. Café / Coffee Shop</h3>
+          <p class="feature-desc">Area bersantai kasual yang menyajikan kopi, teh, minuman segar, pastry, dan makanan ringan untuk pertemuan informal, bekerja, dan bersosialisasi.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-children"></i></div>
+          <span class="facility-floor-pill"><i class="fa-solid fa-layer-group"></i> 2nd Floor</span>
+          <h3 class="feature-title">9. Kids Club / Playground</h3>
+          <p class="feature-desc">Area bermain khusus anak-anak dengan fasilitas permainan edukatif, aktivitas kreatif, dan hiburan menyenangkan bagi keluarga.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-square-parking"></i></div>
+          <span class="facility-floor-pill"><i class="fa-solid fa-layer-group"></i> Basement</span>
+          <h3 class="feature-title">10. Parking Area</h3>
+          <p class="feature-desc">Area parkir khusus basement & outdoor bagi tamu hotel, pengunjung restoran, dan peserta event dengan sistem keamanan & manajemen kendaraan.</p>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 36px;">
+        <a href="facilities.html" class="btn btn-outline-gold">
+          <i class="fa-solid fa-compass"></i> Lihat Galeri Lengkap 10 Fasilitas Hotel
+        </a>
       </div>
     </div>
   </section>
@@ -217,15 +318,12 @@
   <!-- ============================================================
        5. GUEST REVIEWS SECTION
        ============================================================ -->
-  <!-- ============================================================
-       5. GUEST REVIEWS SECTION
-       ============================================================ -->
   <section id="reviews" class="section-reviews">
     <div class="container">
       <div style="text-align: center; max-width: 720px; margin: 0 auto 36px;">
         <span class="section-tag">Testimoni & Penilaian Tamu</span>
-        <h2 class="section-title">Apa Kata Mereka Tentang LUXURY Hotel</h2>
-        <p class="section-desc">Pengalaman nyata dari para tamu istimewa yang telah menikmati kemewahan dan keramahtamahan bintang 5 kami.</p>
+        <h2 class="section-title">Apa Kata Mereka Tentang Pakubuwono Edhotel</h2>
+        <p class="section-desc">Pengalaman nyata dari para tamu istimewa yang telah menikmati kenyamanan menginap dan keramahtamahan kami di kawasan Senayan.</p>
 
         <!-- Rating Summary Bar & CTA -->
         <div class="reviews-summary-bar">
@@ -261,18 +359,19 @@
     <div class="container">
       <div class="footer-grid">
         <div>
-          <span class="brand-title" style="font-size: 1.8rem;">LUXURY</span>
-          <p class="brand-subtitle" style="margin-bottom: 20px;">HOTEL & RESORT</p>
-          <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 320px;">
-            Menyajikan standar tertinggi kemewahan dan keramahtamahan di jantung destinasi paling eksotis.
+          <img src="assets/images/logo-pakubuwono.png" alt="Logo Pakubuwono Edhotel" style="height: 85px; width: auto; margin-bottom: 14px;">
+          <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 340px;">
+            Berlokasi strategis di pusat kota Jakarta kawasan Senayan, dekat Stadion Gelora Bung Karno, Senayan City, Plaza Senayan, dan fX Sudirman.
           </p>
         </div>
 
         <div>
           <h4 class="footer-title">Navigasi</h4>
           <ul class="footer-links">
-            <li><a href="#rooms">Daftar Kamar</a></li>
-            <li><a href="#facilities">Fasilitas Resor</a></li>
+            <li><a href="#rooms">Kamar & Suite</a></li>
+            <li><a href="restaurant.html">Andrawina Restaurant</a></li>
+            <li><a href="facilities.html">10 Fasilitas Hotel</a></li>
+            <li><a href="mice.html">MICE & Ballroom</a></li>
             <li><a href="#reviews">Ulasan & Rating</a></li>
           </ul>
         </div>
@@ -289,19 +388,19 @@
         <div>
           <h4 class="footer-title">Kontak & Lokasi</h4>
           <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 10px;">
-            <i class="fa-solid fa-location-dot text-gold"></i> Jl. Sunset Boulevard No. 88, Resort Haven
+            <i class="fa-solid fa-location-dot text-gold"></i> Jl. Pakubuwono VI, Kebayoran Baru - Senayan, Jakarta Selatan (SMKN 30 Jakarta)
           </p>
           <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 10px;">
-            <i class="fa-solid fa-phone text-gold"></i> +62 21 8888 9999
+            <i class="fa-solid fa-phone text-gold"></i> +62 21 722-3030
           </p>
           <p style="color: var(--text-muted); font-size: 0.9rem;">
-            <i class="fa-solid fa-envelope text-gold"></i> reservations@luxuryhotel.com
+            <i class="fa-solid fa-envelope text-gold"></i> reservations@pakubuwonoedhotel.com
           </p>
         </div>
       </div>
 
       <div class="footer-bottom">
-        &copy; 2026 LUXURY Hotel & Resort. Seluruh Hak Cipta Dilindungi.
+        &copy; 2026 PAKUBUWONO EDHOTEL — SMKN 30 Jakarta. Seluruh Hak Cipta Dilindungi.
       </div>
     </div>
   </footer>
@@ -390,19 +489,78 @@
             </div>
           </div>
 
-          <div class="form-group" style="margin-bottom: 16px;">
-            <label class="form-label"><i class="fa-solid fa-user-group text-gold"></i> Jumlah Tamu</label>
-            <select id="bookGuestCount" class="form-control" required>
-              <option value="1">1 Orang</option>
-              <option value="2" selected>2 Orang</option>
-              <option value="3">3 Orang</option>
-              <option value="4">4 Orang</option>
-              <option value="5">5 Orang</option>
-            </select>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div class="form-group">
+              <label class="form-label"><i class="fa-solid fa-user-group text-gold"></i> Jumlah Tamu (Pax)</label>
+              <select id="bookGuestCount" class="form-control" required>
+                <option value="1">1 Orang</option>
+                <option value="2" selected>2 Orang</option>
+                <option value="3">3 Orang</option>
+                <option value="4">4 Orang</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label"><i class="fa-solid fa-bed text-gold"></i> Bed Type (TW / KS)</label>
+              <select id="bookBedType" class="form-control" required>
+                <option value="TW">TW — Twin Bed</option>
+                <option value="KS">KS — King Size Bed</option>
+              </select>
+            </div>
           </div>
 
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label"><i class="fa-solid fa-location-dot text-gold"></i> Alamat Lengkap (Address)</label>
+            <input type="text" id="bookGuestAddress" class="form-control" placeholder="Contoh: Jl. Pakubuwono VI No. 10, Kebayoran Baru, Jakarta Selatan">
+          </div>
+
+          <!-- Accordion Detail Kedatangan & Instansi (Sesuai Official Reservation Form) -->
+          <details class="resform-optional-accordion" style="margin-bottom: 16px; background: rgba(21, 29, 51, 0.65); border: 1px solid var(--gold-border); border-radius: var(--radius-sm); padding: 12px 14px;">
+            <summary style="cursor: pointer; font-size: 0.85rem; font-weight: 700; color: var(--gold-light); display: flex; align-items: center; justify-content: space-between; list-style: none;">
+              <span><i class="fa-solid fa-file-signature text-gold" style="margin-right: 6px;"></i> Detail Kedatangan, Penerbangan & Instansi (Reservation Form - Opsional)</span>
+              <i class="fa-solid fa-chevron-down text-gold" style="font-size: 0.75rem;"></i>
+            </summary>
+            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="form-group">
+                  <label class="form-label" style="font-size: 0.72rem;"><i class="fa-solid fa-plane-arrival text-gold"></i> Arrival Flight No.</label>
+                  <input type="text" id="bookArrivalFlight" class="form-control" placeholder="Contoh: GA-402 / -">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" style="font-size: 0.72rem;"><i class="fa-regular fa-clock text-gold"></i> Estimasi Kedatangan (ETA)</label>
+                  <input type="time" id="bookArrivalEta" class="form-control" value="14:00">
+                </div>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="form-group">
+                  <label class="form-label" style="font-size: 0.72rem;"><i class="fa-solid fa-plane-departure text-gold"></i> Departure Flight No.</label>
+                  <input type="text" id="bookDepartureFlight" class="form-control" placeholder="Contoh: GA-405 / -">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" style="font-size: 0.72rem;"><i class="fa-regular fa-clock text-gold"></i> Estimasi Keberangkatan (ETD)</label>
+                  <input type="time" id="bookDepartureEtd" class="form-control" value="12:00">
+                </div>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="form-group">
+                  <label class="form-label" style="font-size: 0.72rem;"><i class="fa-solid fa-building text-gold"></i> Company Name / Instansi</label>
+                  <input type="text" id="bookCompanyName" class="form-control" placeholder="Contoh: SMKN 30 Jakarta / Pribadi">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" style="font-size: 0.72rem;"><i class="fa-solid fa-file-invoice-dollar text-gold"></i> Billing Instruction</label>
+                  <select id="bookBillingInstruction" class="form-control">
+                    <option value="Personal Account (Tamu Pribadi)">Personal Account (Tamu Pribadi)</option>
+                    <option value="Bank Transfer / Virtual Account">Bank Transfer / Virtual Account</option>
+                    <option value="QRIS / E-Wallet">QRIS / E-Wallet</option>
+                    <option value="Company Account / Guarantee Letter">Company Account / Guarantee Letter</option>
+                    <option value="Cash / Credit Card at Front Desk">Cash / Credit Card at Front Desk</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </details>
+
           <div class="form-group" style="margin-bottom: 20px;">
-            <label class="form-label"><i class="fa-solid fa-pen-fancy text-gold"></i> Permintaan Khusus (Opsional)</label>
+            <label class="form-label"><i class="fa-solid fa-pen-fancy text-gold"></i> Catatan / Remarks (Opsional)</label>
             <textarea id="bookSpecialRequests" class="form-control" rows="2" placeholder="Contoh: Kamar non-smoking, bantal ekstra, atau check-in larut malam."></textarea>
           </div>
 
@@ -476,14 +634,24 @@
     </div>
   </div>
 
-  <!-- D. E-VOUCHER / INVOICE MODAL (Printable) -->
+  <!-- D. E-VOUCHER & OFFICIAL RESERVATION FORM MODAL (Printable) -->
   <div class="modal-overlay" id="voucherModal">
-    <div class="modal-content" style="max-width: 680px;">
+    <div class="modal-content" style="max-width: 820px;">
       <div class="modal-header">
-        <h3 class="modal-title font-serif">E-Voucher & Bukti Reservasi</h3>
+        <h3 class="modal-title font-serif" id="voucherModalTitle">E-Voucher & Reservation Form</h3>
         <button class="modal-close" onclick="closeModal('voucherModal')">&times;</button>
       </div>
       <div class="modal-body">
+        <!-- Tab Switcher: E-Voucher vs Official Reservation Form -->
+        <div style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
+          <button type="button" class="btn btn-gold btn-sm" id="tabBtnEvoucher" onclick="switchVoucherView('evoucher')" style="flex: 1;">
+            <i class="fa-solid fa-receipt"></i> E-Voucher Digital
+          </button>
+          <button type="button" class="btn btn-outline-gold btn-sm" id="tabBtnResForm" onclick="switchVoucherView('resform')" style="flex: 1;">
+            <i class="fa-solid fa-file-contract"></i> Official Reservation Form (Standar Edhotel)
+          </button>
+        </div>
+
         <div id="voucherPrintArea" class="printable-voucher" style="background: #ffffff; color: #0f172a; padding: 28px; border-radius: var(--radius-sm); border: 2px solid #c5a059;">
           <!-- Populated by JS -->
         </div>
@@ -585,7 +753,7 @@
           <!-- Star Rating Interactive Selector -->
           <div class="form-group" style="text-align: center; margin-bottom: 24px; background: var(--bg-surface-elevated); padding: 20px; border-radius: var(--radius-sm); border: 1px solid var(--gold-border);">
             <label class="form-label" style="display: block; font-size: 0.95rem; margin-bottom: 12px; font-weight: 600;">
-              Seberapa Puas Anda dengan LUXURY Hotel?
+              Seberapa Puas Anda dengan Pakubuwono Edhotel?
             </label>
             <div class="interactive-star-rating" id="starRatingContainer">
               <i class="fa-solid fa-star star-btn active" data-rating="1" onclick="selectStarRating(1)" onmouseover="hoverStarRating(1)" onmouseout="resetStarRatingHover()"></i>
@@ -621,10 +789,23 @@
     </div>
   </div>
 
+  <!-- G. ROOM DETAIL SPECIFICATION MODAL -->
+  <div class="modal-overlay" id="roomDetailModal">
+    <div class="modal-content" style="max-width: 720px;">
+      <div class="modal-header">
+        <h3 class="modal-title font-serif" id="roomDetailModalTitle">Detail Spesifikasi Kamar</h3>
+        <button class="modal-close" onclick="closeModal('roomDetailModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="roomDetailModalBody">
+        <!-- Populated dynamically by JS -->
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- JavaScript Frontend -->
-  <script src="assets/js/app.js"></script>
+  <script src="assets/js/app.js?v=3"></script>
 </body>
 </html>

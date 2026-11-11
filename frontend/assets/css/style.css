@@ -258,40 +258,68 @@ h1, h2, h3, h4, .font-serif {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 24px;
 }
 
 .brand-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  min-width: max-content;
+  white-space: nowrap;
+  margin-right: 8px;
+}
+.brand-logo-img {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(197, 160, 89, 0.35));
+  flex-shrink: 0;
+}
+.brand-logo-text {
   display: flex;
   flex-direction: column;
+  min-width: max-content;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .brand-title {
   font-family: var(--font-serif);
-  font-size: 1.6rem;
+  font-size: 1.18rem;
   font-weight: 800;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.1em;
   color: var(--text-primary);
+  line-height: 1.15;
+  white-space: nowrap;
 }
 .brand-subtitle {
-  font-size: 0.65rem;
-  letter-spacing: 0.35em;
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--gold-primary);
-  margin-top: -3px;
+  margin-top: 2px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .nav-menu {
   display: flex;
   align-items: center;
-  gap: 32px;
+  justify-content: center;
+  gap: 26px;
   list-style: none;
+  flex-shrink: 0;
+  margin: 0 auto;
 }
 
 .nav-link {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 500;
   color: var(--text-secondary);
   position: relative;
   padding: 6px 0;
+  white-space: nowrap;
 }
 .nav-link::after {
   content: '';
@@ -313,19 +341,23 @@ h1, h2, h3, h4, .font-serif {
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
 .nav-right-cluster {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 .nav-auth-cluster {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* Header Direct Logout Button */
@@ -1366,8 +1398,38 @@ h1, h2, h3, h4, .font-serif {
    13. MASTER RESPONSIVE BREAKPOINTS (Mobile & Tablet Viewports)
    ============================================================ */
 
-/* --- TABLET VIEWPORT (<= 1024px) --- */
-@media (max-width: 1024px) {
+/* --- COMPACT DESKTOP / LAPTOP VIEWPORT (<= 1280px) --- */
+@media (max-width: 1280px) {
+  .nav-wrapper {
+    gap: 16px;
+  }
+  .nav-menu {
+    gap: 18px;
+  }
+  .nav-link {
+    font-size: 0.86rem;
+  }
+  .brand-logo-img {
+    height: 34px;
+  }
+  .brand-title {
+    font-size: 1.08rem;
+    letter-spacing: 0.08em;
+  }
+  .brand-subtitle {
+    font-size: 0.52rem;
+    letter-spacing: 0.12em;
+  }
+  .nav-bookings-btn .nav-btn-text {
+    display: none;
+  }
+  .nav-bookings-btn {
+    padding: 8px 12px;
+  }
+}
+
+/* --- TABLET & SMALL LAPTOP VIEWPORT (<= 1100px) --- */
+@media (max-width: 1100px) {
   .nav-menu {
     display: none !important;
   }
@@ -1425,12 +1487,12 @@ h1, h2, h3, h4, .font-serif {
   }
 
   .brand-title {
-    font-size: 1.25rem;
-    letter-spacing: 0.12em;
+    font-size: 1.05rem;
+    letter-spacing: 0.08em;
   }
   .brand-subtitle {
-    font-size: 0.55rem;
-    letter-spacing: 0.25em;
+    font-size: 0.5rem;
+    letter-spacing: 0.12em;
   }
 
   .nav-wrapper {
@@ -1695,16 +1757,239 @@ h1, h2, h3, h4, .font-serif {
   }
 }
 
-/* Print Styles for E-Voucher */
+/* Print Styles for E-Voucher & Official Reservation Form */
+@page {
+  size: A4 portrait;
+  margin: 10mm;
+}
+
 @media print {
-  body * { visibility: hidden; }
-  .printable-voucher, .printable-voucher * { visibility: visible; }
-  .printable-voucher {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    background: #fff !important;
-    color: #000 !important;
+  html,
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  body > *:not(.modal-overlay.active),
+  #myBookingsModal,
+  #authModal,
+  #bookingModal,
+  #paymentModal,
+  #roomDetailModal,
+  #reviewModal {
+    display: none !important;
+  }
+  .modal-overlay.active {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+  .modal-overlay.active .modal-content,
+  .modal-overlay.active .modal-dialog {
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+  .modal-overlay.active .modal-header,
+  .modal-overlay.active .modal-footer,
+  .modal-overlay.active .modal-body > *:not(.printable-voucher) {
+    display: none !important;
+  }
+  .modal-overlay.active .modal-body {
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+  }
+  .modal-overlay.active .printable-voucher {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 12px 16px !important;
+    margin: 0 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+/* --- PAKUBUWONO EDHOTEL CUSTOM EXTENSIONS --- */
+.room-specs-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.room-spec-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(197, 160, 89, 0.12);
+  border: 1px solid var(--gold-border);
+  color: var(--gold-light);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+.price-usd-tag {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--gold-primary);
+  background: rgba(197, 160, 89, 0.14);
+  border: 1px solid var(--gold-border);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.facility-floor-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(197, 160, 89, 0.14);
+  border: 1px solid var(--gold-border);
+  color: var(--gold-light);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  margin-bottom: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.room-detail-spec-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.room-detail-spec-box {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--gold-border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+}
+.room-detail-spec-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.room-detail-spec-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--gold-light);
+}
+.room-detail-section {
+  background: rgba(21, 29, 51, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.room-detail-section h4 {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--gold-primary);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.room-detail-section p {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+/* Facility, Restaurant & MICE Card Media & Content Normalization */
+.room-img-wrapper {
+  position: relative;
+  height: 250px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--bg-surface);
+}
+.room-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s ease;
+}
+.room-card:hover .room-img {
+  transform: scale(1.08);
+}
+.room-content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  background: rgba(13, 19, 34, 0.94);
+  border-top: 1px solid rgba(197, 160, 89, 0.16);
+  position: relative;
+  z-index: 2;
+}
+.room-content .room-desc {
+  display: block;
+  -webkit-line-clamp: unset;
+  overflow: visible;
+  line-height: 1.65;
+  margin-bottom: 0;
+}
+.facility-desc-layer {
+  background: rgba(21, 29, 51, 0.72);
+  border: 1px solid rgba(197, 160, 89, 0.18);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-top: 6px;
+  flex: 1;
+}
+.price-val {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--gold-light);
+}
+
+@media (max-width: 480px) {
+  .brand-logo-img {
+    height: 34px;
   }
 }

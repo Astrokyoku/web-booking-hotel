@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LUXURY Hotel & Resort - Admin Management Portal</title>
+  <title>PAKUBUWONO EDHOTEL — Admin Management Portal</title>
+  <link rel="icon" href="assets/images/logo-emblem.png" type="image/png">
 
   <!-- Google Fonts & FontAwesome -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,7 +13,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <!-- Admin Stylesheet -->
-  <link rel="stylesheet" href="assets/css/admin.css?v=2">
+  <link rel="stylesheet" href="assets/css/admin.css?v=4">
 </head>
 <body>
 
@@ -27,12 +28,12 @@
        ============================================================ -->
   <aside class="admin-sidebar" id="adminSidebar">
     <div class="sidebar-header">
-      <div class="sidebar-logo-icon">
-        <i class="fa-solid fa-crown"></i>
+      <div class="sidebar-logo-icon" style="background: rgba(197, 160, 89, 0.12); padding: 6px;">
+        <img src="assets/images/logo-emblem.png" alt="Logo Pakubuwono Edhotel" style="width: 30px; height: auto; object-fit: contain;">
       </div>
       <div class="sidebar-brand">
-        <h2>LUXURY</h2>
-        <span>ADMIN PORTAL</span>
+        <h2 style="font-size: 1.05rem; letter-spacing: 0.08em;">PAKUBUWONO</h2>
+        <span>EDHOTEL • ADMIN</span>
       </div>
     </div>
 
@@ -272,7 +273,7 @@
       <div class="admin-card">
         <div class="admin-card-header">
           <div>
-            <h3 class="admin-card-title">Daftar Reservasi Restoran Angie</h3>
+            <h3 class="admin-card-title">Daftar Reservasi Andrawina Restaurant (Lt. 1)</h3>
             <p style="font-size: 0.85rem; color: var(--text-secondary);">Kelola status meja, kedatangan tamu, dan verifikasi pembayaran deposit restoran.</p>
           </div>
 
@@ -396,7 +397,7 @@
         <div class="admin-card-header">
           <div>
             <h3 class="admin-card-title">Direktori Tamu Terdaftar</h3>
-            <p style="font-size: 0.85rem; color: var(--text-secondary);">Daftar seluruh tamu yang memiliki akun di LUXURY Hotel & Resort.</p>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">Daftar seluruh tamu yang memiliki akun di Pakubuwono Edhotel (SMKN 30 Jakarta).</p>
           </div>
         </div>
 
@@ -523,6 +524,30 @@
     </div>
   </div>
 
+  <!-- Modal Official Reservation Form (Cetak Standar Edhotel) -->
+  <div class="modal-overlay" id="adminReservationFormModal">
+    <div class="modal-dialog" style="max-width: 820px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-file-contract text-gold"></i> Official Reservation Form — Pakubuwono Edhotel</h3>
+        <button class="modal-close-btn" onclick="closeAdminModal('adminReservationFormModal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" style="max-height: 78vh; overflow-y: auto;">
+        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px;">
+          <i class="fa-solid fa-circle-info text-gold"></i> Anda dapat mengklik kotak <strong>New Booking / Amandement / Cancellation</strong>, pilihan <strong>Reservation by</strong> (Phone / OTA / Personal), atau <strong>Bed Type (TW/KS)</strong> langsung pada lembar formulir sebelum mencetak.
+        </p>
+        <div id="adminResFormPrintArea" class="printable-voucher" style="background: #ffffff; color: #000000; padding: 24px; border-radius: 8px; border: 2px solid #c5a059;">
+          <!-- Populated by admin.js -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-glass btn-sm" onclick="closeAdminModal('adminReservationFormModal')">Tutup</button>
+        <button type="button" class="btn btn-gold btn-sm" onclick="window.print()">
+          <i class="fa-solid fa-print"></i> Cetak / Simpan PDF (Reservation Form)
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal Admin Login Gate (Jika belum login admin) -->
   <div class="modal-overlay" id="adminLoginGateModal">
     <div class="modal-dialog" style="max-width: 450px;">
@@ -537,7 +562,7 @@
 
           <div class="form-group">
             <label for="adminEmail">Email Administrator</label>
-            <input type="email" class="form-control" id="adminEmail" value="admin@luminaresort.com" required>
+            <input type="email" class="form-control" id="adminEmail" value="admin@pakubuwonoedhotel.com" required>
           </div>
 
           <div class="form-group">
@@ -556,6 +581,6 @@
   </div>
 
   <!-- JavaScript Admin Controller -->
-  <script src="assets/js/admin.js?v=2"></script>
+  <script src="assets/js/admin.js?v=3"></script></script>
 </body>
 </html>

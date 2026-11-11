@@ -248,8 +248,11 @@ function ensureMobileNavExists() {
     <aside class="mobile-nav-drawer" id="mobileNavDrawer" aria-label="Menu Navigasi Mobile">
       <div class="drawer-header">
         <a href="index.html" class="brand-logo" onclick="closeMobileNav()">
-          <span class="brand-title">LUXURY</span>
-          <span class="brand-subtitle">HOTEL & RESORT</span>
+          <img src="assets/images/logo-emblem.png" alt="Logo Pakubuwono Edhotel" class="brand-logo-img">
+          <div class="brand-logo-text">
+            <span class="brand-title">PAKUBUWONO</span>
+            <span class="brand-subtitle">EDHOTEL • SMKN 30 JAKARTA</span>
+          </div>
         </a>
         <button class="drawer-close-btn" onclick="closeMobileNav()" aria-label="Tutup Menu">
           <i class="fa-solid fa-xmark"></i>
@@ -262,19 +265,19 @@ function ensureMobileNavExists() {
 
       <ul class="drawer-menu">
         <li><a href="index.html#rooms" class="drawer-link" onclick="closeMobileNav()"><i class="fa-solid fa-bed text-gold"></i> <span>Kamar & Suite</span></a></li>
-        <li><a href="restaurant.html" class="drawer-link" onclick="closeMobileNav()"><i class="fa-solid fa-utensils text-gold"></i> <span>Restoran Angie</span></a></li>
-        <li><a href="facilities.html" class="drawer-link" onclick="closeMobileNav()"><i class="fa-solid fa-spa text-gold"></i> <span>Fasilitas Mewah</span></a></li>
+        <li><a href="restaurant.html" class="drawer-link" onclick="closeMobileNav()"><i class="fa-solid fa-utensils text-gold"></i> <span>Andrawina Restaurant</span></a></li>
+        <li><a href="facilities.html" class="drawer-link" onclick="closeMobileNav()"><i class="fa-solid fa-spa text-gold"></i> <span>Fasilitas Hotel</span></a></li>
         <li><a href="mice.html" class="drawer-link" onclick="closeMobileNav()"><i class="fa-solid fa-handshake text-gold"></i> <span>MICE & Ballroom</span></a></li>
       </ul>
 
       <div class="drawer-footer">
         <div class="drawer-contact-item">
           <i class="fa-solid fa-phone text-gold"></i>
-          <span>+62 21 555-LUXURY (24/7)</span>
+          <span>+62 21 722-3030 (Resepsionis 24/7)</span>
         </div>
         <div class="drawer-contact-item">
           <i class="fa-solid fa-location-dot text-gold"></i>
-          <span>Jl. Pantai Indah Kapuk No. 88, Jakarta</span>
+          <span>Jl. Pakubuwono VI, Senayan - Kebayoran Baru, Jakarta</span>
         </div>
       </div>
     </aside>
@@ -510,12 +513,105 @@ function handleLogout() {
 // 4. ROOMS CATALOG & LIVE AVAILABILITY SEARCH
 // ============================================================
 
+// Spesifikasi Resmi 6 Tipe Kamar PAKUBUWONO EDHOTEL (Sesuai PDF)
+const ROOM_SPECS_MAP = {
+  'Superior Room': {
+    price_usd: 50,
+    room_size: '20–24 sqm',
+    occupancy_label: '1–2 Tamu',
+    bed_type: 'Twin Bed',
+    tv_short: '32–40" LED/Smart TV',
+    tv_details: '32–40-inch LED atau Smart TV.',
+    bathroom_details: 'Kamar mandi pribadi dilengkapi dengan shower, toilet, wastafel (washbasin), dan cermin.',
+    in_room_facilities: 'AC, lemari pakaian (wardrobe), meja kerja kecil, kursi, telepon, Wi-Fi, safety deposit box, kulkas mini (mini refrigerator), ketel listrik, fasilitas pembuat kopi & teh, air mineral botol gratis, sandal kamar, dan perlengkapan mandi dasar.',
+    interior_design: 'Desain interior simpel, modern, dan fungsional yang memberikan kenyamanan esensial serta fasilitas praktis untuk masa menginap yang menyenangkan.',
+    default_image: 'assets/images/room-superior.jpg',
+  },
+  'Deluxe Room': {
+    price_usd: 65,
+    room_size: '25–30 sqm',
+    occupancy_label: '1–2 Tamu',
+    bed_type: 'Twin Bed',
+    tv_short: '40–43" LED/Smart TV',
+    tv_details: '40–43-inch LED atau Smart TV.',
+    bathroom_details: 'Kamar mandi pribadi dilengkapi dengan shower, toilet, wastafel, cermin besar, serta bathtub pada unit pilihan.',
+    in_room_facilities: 'AC, lemari pakaian, meja kerja, kursi santai (lounge chair), telepon, Wi-Fi, safety deposit box, kulkas mini, ketel listrik, fasilitas pembuat kopi & teh, air mineral botol gratis, pengering rambut (hair dryer), sandal kamar, jubah mandi opsional (bathrobe), dan perlengkapan mandi lengkap.',
+    interior_design: 'Lebih luas dan elegan dibandingkan Superior Room, menampilkan furnitur yang ditingkatkan, sentuhan akhir interior yang berkelas, dan kenyamanan tambahan.',
+    default_image: 'assets/images/room-deluxe.jpg',
+  },
+  'Executive Room': {
+    price_usd: 80,
+    room_size: '30–36 sqm',
+    occupancy_label: '1–2 Tamu',
+    bed_type: 'King Bed',
+    tv_short: '43–50" Smart TV',
+    tv_details: '43–50-inch Smart TV.',
+    bathroom_details: 'Kamar mandi pribadi menampilkan shower terpisah atau kombinasi bathtub dengan shower, toilet, wastafel, dan cermin besar.',
+    in_room_facilities: 'AC, lemari pakaian, meja kerja eksekutif, kursi ergonomis, sofa kecil, telepon, Wi-Fi kecepatan tinggi (high-speed Wi-Fi), safety deposit box, kulkas mini, fasilitas pembuat kopi & teh, air mineral botol gratis, hair dryer, bathrobe, sandal kamar, dan perlengkapan mandi premium.',
+    interior_design: 'Desain interior eksklusif dan berkelas yang menawarkan kenyamanan serta privasi lebih tinggi bagi pelaku perjalanan bisnis maupun wisata. Unit pilihan juga menyediakan akses Executive Lounge.',
+    default_image: 'assets/images/room-executive.jpg',
+  },
+  'Junior Suite Room': {
+    price_usd: 95,
+    room_size: '36–45 sqm',
+    occupancy_label: '1–2 Tamu',
+    bed_type: 'King Bed',
+    tv_short: '50–55" Smart TV',
+    tv_details: '50–55-inch Smart TV.',
+    bathroom_details: 'Kamar mandi pribadi dilengkapi dengan shower dan bathtub, toilet, wastafel, serta area rias (vanity area).',
+    in_room_facilities: 'AC, lemari pakaian besar, meja kerja, sofa dan meja kopi (coffee table), telepon, Wi-Fi, safety deposit box, kulkas mini, mesin kopi (coffee machine) atau pembuat kopi & teh, air mineral botol gratis, hair dryer, bathrobe, sandal kamar, dan perlengkapan mandi premium.',
+    interior_design: 'Tata letak open-plan yang luas memadukan area tidur dan area duduk (living area) dalam satu ruangan, menampilkan perabotan elegan dan sentuhan akhir interior yang ditingkatkan.',
+    default_image: 'assets/images/room-junior-suite.jpg',
+  },
+  'Suite Room': {
+    price_usd: 110,
+    room_size: '50–80 sqm',
+    occupancy_label: '1–2 Tamu / Konfigurasi',
+    bed_type: 'King Bed',
+    tv_short: '55–65" Dual Smart TV',
+    tv_details: '55–65-inch Smart TV, umumnya dengan televisi terpisah di kamar tidur dan ruang tamu.',
+    bathroom_details: 'Kamar mandi pribadi yang luas menampilkan bathtub, area shower terpisah, toilet, wastafel ganda (double washbasin), cermin besar, dan vanity area.',
+    in_room_facilities: 'AC, ruang tamu terpisah (separate living room), sofa, meja kopi, meja makan opsional, meja kerja, lemari pakaian besar, telepon, Wi-Fi premium, safety deposit box, kulkas mini, mesin kopi, air mineral botol gratis, hair dryer, bathrobe, sandal kamar, dan perlengkapan mandi premium.',
+    interior_design: 'Tata letak kamar tidur dan ruang tamu terpisah yang memberikan privasi lebih tinggi, keleluasaan ruang, serta tingkat kenyamanan maksimal dengan perabotan premium dan fasilitas eksklusif.',
+    default_image: 'assets/images/room-suite.jpg',
+  },
+  'Presidential Suite': {
+    price_usd: 250,
+    room_size: '100–200 sqm+',
+    occupancy_label: '2–4 Tamu / Konfigurasi',
+    bed_type: 'Premium King Bed',
+    tv_short: '65–85" Smart TV+',
+    tv_details: '65–85-inch Smart TV atau lebih besar, tersedia di kamar tidur utama (master bedroom) dan ruang tamu.',
+    bathroom_details: 'Kamar mandi ultra-mewah menampilkan freestanding bathtub, ruang shower terpisah, toilet terpisah, double washbasin, vanity area, serta opsi jacuzzi eksklusif.',
+    in_room_facilities: 'Ruang tamu eksklusif, ruang makan (dining area), master bedroom, walk-in closet, area kerja privat, pantry atau kitchenette, mini bar, mesin kopi premium, beberapa unit televisi, sistem kontrol kamar pintar (smart room control), Wi-Fi premium, safety deposit box besar, hair dryer, bathrobe premium, perlengkapan mandi bermerek (branded amenities), dan layanan Personal Butler.',
+    interior_design: 'Tingkat kemewahan dan eksklusivitas tertinggi yang menampilkan ruang hunian sangat luas, area fungsional khusus, perabotan mahakarya, desain interior berkelas, dan layanan keramahtamahan personal.',
+    default_image: 'assets/images/room-presidential-suite.jpg',
+  },
+};
+
+function getRoomSpecs(room) {
+  const mapped = ROOM_SPECS_MAP[room.name] || {};
+  const usdFromPrice = Math.round(Number(room.base_price || 785000) / 15700);
+  return {
+    price_usd: room.price_usd ? Number(room.price_usd) : (mapped.price_usd || usdFromPrice),
+    room_size: room.room_size || mapped.room_size || '24 sqm',
+    occupancy_label: mapped.occupancy_label || `1–${room.capacity || 2} Tamu`,
+    bed_type: room.bed_type || mapped.bed_type || 'King / Twin Bed',
+    tv_short: mapped.tv_short || room.tv_details || 'Smart TV',
+    tv_details: room.tv_details || mapped.tv_details || 'Smart LED TV dengan saluran internasional.',
+    bathroom_details: room.bathroom_details || mapped.bathroom_details || 'Kamar mandi pribadi lengkap dengan shower dan perlengkapan mandi.',
+    in_room_facilities: mapped.in_room_facilities || (Array.isArray(room.amenities) ? room.amenities.join(', ') : '-'),
+    interior_design: room.interior_design || mapped.interior_design || room.description || '-',
+    image_url: room.image_url || mapped.default_image || 'assets/images/room-superior.jpg',
+  };
+}
+
 /**
  * Mengambil katalog seluruh tipe kamar dari backend
  */
 async function fetchRooms() {
   const container = document.getElementById('roomsContainer');
-  if (!container) return; // Halaman tidak memiliki container kamar (seperti fasilitas, resto, mice)
+  if (!container) return;
 
   try {
     const res = await fetch(`${API_BASE}/rooms`);
@@ -566,7 +662,7 @@ function renderRoomCards(rooms, isSearch = false, searchQuery = null) {
     if (isSearch && searchQuery) {
       subtitle.innerHTML = `Menampilkan <strong>${rooms.length} tipe kamar</strong> yang tersedia untuk periode <strong>${searchQuery.check_in} s/d ${searchQuery.check_out}</strong> (${searchQuery.total_nights} malam). Rincian termasuk <strong>Pajak Hotel 12%</strong>.`;
     } else {
-      subtitle.innerText = 'Pilihan akomodasi mewah dengan fasilitas modern berstandar internasional dan pemandangan luar biasa.';
+      subtitle.innerText = '6 pilihan akomodasi elegan Pakubuwono Edhotel mulai dari Superior Room hingga Presidential Suite dengan standar kenyamanan terbaik di Senayan.';
     }
   }
 
@@ -574,19 +670,25 @@ function renderRoomCards(rooms, isSearch = false, searchQuery = null) {
     const amenities = Array.isArray(room.amenities) ? room.amenities : [];
     const rating = room.average_rating || 5.0;
     const availableCount = room.available_count !== undefined ? room.available_count : room.available_rooms;
+    const spec = getRoomSpecs(room);
 
     let priceDisplayHtml = '';
     if (room.pricing_breakdown) {
       priceDisplayHtml = `
         <div class="room-price">
-          <span class="price-amount">Rp ${Number(room.pricing_breakdown.total_price).toLocaleString('id-ID')}</span>
-          <span class="price-unit">Total (${room.pricing_breakdown.total_nights} malam + Pajak 12%)</span>
+          <div>
+            <span class="price-amount">Rp ${Number(room.pricing_breakdown.total_price).toLocaleString('id-ID')}</span>
+          </div>
+          <span class="price-unit">Total ${room.pricing_breakdown.total_nights} malam (Inc. PPN 12%) • Tarif dasar $${spec.price_usd}/malam</span>
         </div>
       `;
     } else {
       priceDisplayHtml = `
         <div class="room-price">
-          <span class="price-amount">Rp ${Number(room.base_price).toLocaleString('id-ID')}</span>
+          <div>
+            <span class="price-amount">Rp ${Number(room.base_price).toLocaleString('id-ID')}</span>
+            <span class="price-usd-tag">$${spec.price_usd}</span>
+          </div>
           <span class="price-unit">/ malam (belum termasuk PPN 12%)</span>
         </div>
       `;
@@ -595,35 +697,150 @@ function renderRoomCards(rooms, isSearch = false, searchQuery = null) {
     return `
       <div class="room-card">
         <div class="room-media">
-          <img src="${room.image_url}" alt="${room.name}" class="room-image" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80'">
-          <span class="room-badge"><i class="fa-solid fa-users"></i> Kapasitas ${room.capacity} Tamu</span>
+          <img src="${spec.image_url}" alt="${room.name}" class="room-image" loading="lazy" onerror="this.src='assets/images/room-superior.jpg'">
+          <span class="room-badge"><i class="fa-solid fa-users"></i> ${spec.occupancy_label}</span>
           <span class="room-rating"><i class="fa-solid fa-star"></i> ${rating}</span>
         </div>
 
         <div class="room-body">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-            <h3 class="room-title">${room.name}</h3>
-            <span style="font-size: 0.75rem; color: ${availableCount > 0 ? 'var(--accent-emerald)' : 'var(--accent-rose)'}; font-weight: 600; background: rgba(0,0,0,0.4); padding: 2px 8px; border-radius: 4px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+            <h3 class="room-title" style="margin-bottom: 0;">${room.name}</h3>
+            <span style="font-size: 0.75rem; color: ${availableCount > 0 ? 'var(--accent-emerald)' : 'var(--accent-rose)'}; font-weight: 600; background: rgba(0,0,0,0.4); padding: 2px 8px; border-radius: 4px; flex-shrink: 0;">
               ${availableCount > 0 ? `${availableCount} Unit Tersedia` : 'Penuh'}
             </span>
           </div>
 
-          <p class="room-desc">${room.description || 'Nikmati kemewahan dan kenyamanan maksimal.'}</p>
+          <div class="room-specs-row">
+            <span class="room-spec-pill" title="Ukuran Kamar"><i class="fa-solid fa-ruler-combined"></i> ${spec.room_size}</span>
+            <span class="room-spec-pill" title="Tipe Tempat Tidur"><i class="fa-solid fa-bed"></i> ${spec.bed_type}</span>
+            <span class="room-spec-pill" title="Televisi"><i class="fa-solid fa-tv"></i> ${spec.tv_short}</span>
+          </div>
+
+          <p class="room-desc">${room.description || spec.interior_design}</p>
 
           <div class="room-amenities">
-            ${amenities.slice(0, 4).map(a => `<span class="amenity-chip"><i class="fa-solid fa-check text-gold"></i> ${a}</span>`).join('')}
+            ${amenities.slice(0, 5).map(a => `<span class="amenity-chip"><i class="fa-solid fa-check text-gold"></i> ${a}</span>`).join('')}
+            ${amenities.length > 5 ? `<span class="amenity-chip" style="color: var(--gold-light); cursor: pointer;" onclick="openRoomDetailModal('${room.id}')">+${amenities.length - 5} lainnya</span>` : ''}
           </div>
 
           <div class="room-footer">
             ${priceDisplayHtml}
-            <button class="btn btn-gold btn-sm" onclick="openBookingModal('${room.id}')" ${availableCount === 0 ? 'disabled' : ''}>
-              <i class="fa-solid fa-calendar-check"></i> Pesan
-            </button>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <button class="btn btn-outline-gold btn-sm" onclick="openRoomDetailModal('${room.id}')" title="Lihat Spesifikasi Lengkap">
+                <i class="fa-solid fa-circle-info"></i> Detail
+              </button>
+              <button class="btn btn-gold btn-sm" onclick="openBookingModal('${room.id}')" ${availableCount === 0 ? 'disabled' : ''}>
+                <i class="fa-solid fa-calendar-check"></i> Pesan
+              </button>
+            </div>
           </div>
         </div>
       </div>
     `;
   }).join('');
+}
+
+/**
+ * Membuka Modal Detail Spesifikasi Lengkap Kamar (Sesuai Dokumen PDF)
+ */
+function openRoomDetailModal(roomTypeId) {
+  const room = state.rooms.find(r => r.id === roomTypeId);
+  if (!room) return;
+
+  const spec = getRoomSpecs(room);
+  const amenities = Array.isArray(room.amenities) ? room.amenities : [];
+  const availableCount = room.available_count !== undefined ? room.available_count : room.available_rooms;
+
+  let modal = document.getElementById('roomDetailModal');
+  if (!modal) {
+    const modalHtml = `
+      <div class="modal-overlay" id="roomDetailModal">
+        <div class="modal-content" style="max-width: 720px;">
+          <div class="modal-header">
+            <h3 class="modal-title font-serif" id="roomDetailModalTitle">Detail Spesifikasi Kamar</h3>
+            <button class="modal-close" onclick="closeModal('roomDetailModal')">&times;</button>
+          </div>
+          <div class="modal-body" id="roomDetailModalBody"></div>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    modal = document.getElementById('roomDetailModal');
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.remove('active');
+    });
+  }
+
+  const titleEl = document.getElementById('roomDetailModalTitle');
+  const bodyEl = document.getElementById('roomDetailModalBody');
+  if (titleEl) titleEl.innerText = room.name;
+
+  if (bodyEl) {
+    bodyEl.innerHTML = `
+      <div style="position: relative; border-radius: var(--radius-md); overflow: hidden; margin-bottom: 20px; height: 260px; border: 1px solid var(--gold-border);">
+        <img src="${spec.image_url}" alt="${room.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='assets/images/room-superior.jpg'">
+        <div style="position: absolute; bottom: 0; inset-inline: 0; background: linear-gradient(transparent, rgba(7,10,18,0.92)); padding: 20px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--gold-primary); font-weight: 700;">PAKUBUWONO EDHOTEL</span>
+            <h3 class="font-serif" style="font-size: 1.6rem; color: #fff; margin: 2px 0 0;">${room.name}</h3>
+          </div>
+          <div style="text-align: right;">
+            <span style="font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; color: var(--gold-light);">Rp ${Number(room.base_price).toLocaleString('id-ID')}</span>
+            <span class="price-usd-tag">$${spec.price_usd} / Night</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="room-detail-spec-grid">
+        <div class="room-detail-spec-box">
+          <div class="room-detail-spec-label"><i class="fa-solid fa-ruler-combined text-gold"></i> Room Size</div>
+          <div class="room-detail-spec-value">${spec.room_size}</div>
+        </div>
+        <div class="room-detail-spec-box">
+          <div class="room-detail-spec-label"><i class="fa-solid fa-user-group text-gold"></i> Occupancy</div>
+          <div class="room-detail-spec-value">${spec.occupancy_label}</div>
+        </div>
+        <div class="room-detail-spec-box">
+          <div class="room-detail-spec-label"><i class="fa-solid fa-bed text-gold"></i> Bed Type</div>
+          <div class="room-detail-spec-value">${spec.bed_type}</div>
+        </div>
+      </div>
+
+      <div class="room-detail-section">
+        <h4><i class="fa-solid fa-bath"></i> Bathroom (Kamar Mandi)</h4>
+        <p>${spec.bathroom_details}</p>
+      </div>
+
+      <div class="room-detail-section">
+        <h4><i class="fa-solid fa-tv"></i> Television (Televisi)</h4>
+        <p>${spec.tv_details}</p>
+      </div>
+
+      <div class="room-detail-section">
+        <h4><i class="fa-solid fa-Concierge-bell fa-bell-concierge"></i> In-Room Facilities (Fasilitas Dalam Kamar)</h4>
+        <p style="margin-bottom: 10px;">${spec.in_room_facilities}</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+          ${amenities.map(a => `<span class="amenity-chip"><i class="fa-solid fa-check text-gold"></i> ${a}</span>`).join('')}
+        </div>
+      </div>
+
+      <div class="room-detail-section">
+        <h4><i class="fa-solid fa-Couch fa-couch"></i> Interior Design (Desain Interior)</h4>
+        <p>${spec.interior_design}</p>
+      </div>
+
+      <div style="display: flex; gap: 12px; margin-top: 20px;">
+        <button class="btn btn-gold" style="flex: 2;" onclick="closeModal('roomDetailModal'); openBookingModal('${room.id}');" ${availableCount === 0 ? 'disabled' : ''}>
+          <i class="fa-solid fa-calendar-check"></i> Pesan ${room.name} Sekarang
+        </button>
+        <button class="btn btn-glass" style="flex: 1;" onclick="closeModal('roomDetailModal')">
+          Tutup
+        </button>
+      </div>
+    `;
+  }
+
+  openModal('roomDetailModal');
 }
 
 /**
@@ -694,18 +911,21 @@ function openBookingModal(roomTypeId) {
   if (!room) return;
 
   state.selectedRoom = room;
+  const spec = getRoomSpecs(room);
 
-  const imageUrl = room.image_url && (room.image_url.startsWith('http') || room.image_url.startsWith('/'))
-    ? room.image_url
-    : 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80';
+  const imageUrl = spec.image_url
+    || (room.image_url && (room.image_url.startsWith('http') || room.image_url.startsWith('/') || room.image_url.startsWith('assets/'))
+      ? room.image_url
+      : 'assets/images/room-superior.jpg');
 
   // Isi summary room di modal
   const summaryBox = document.getElementById('bookingRoomSummary');
   summaryBox.innerHTML = `
-    <img src="${imageUrl}" alt="${room.name}" style="width: 90px; height: 68px; object-fit: cover; border-radius: 8px; border: 1px solid var(--gold-border);" onerror="this.src='https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80'">
+    <img src="${imageUrl}" alt="${room.name}" style="width: 96px; height: 72px; object-fit: cover; border-radius: 8px; border: 1px solid var(--gold-border);" onerror="this.src='https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80'">
     <div>
       <h4 style="font-size: 1.15rem; color: var(--gold-light); font-weight: 700; margin-bottom: 4px;">${room.name}</h4>
-      <p style="font-size: 0.85rem; color: var(--text-secondary);"><i class="fa-solid fa-user-group text-gold"></i> Maks. ${room.capacity} Tamu • <span style="color: var(--gold-primary); font-weight: 600;">Rp ${Number(room.base_price).toLocaleString('id-ID')}</span> / malam</p>
+      <p style="font-size: 0.84rem; color: var(--text-secondary); margin-bottom: 2px;"><i class="fa-solid fa-ruler-combined text-gold"></i> ${spec.room_size} • <i class="fa-solid fa-bed text-gold"></i> ${spec.bed_type} • <i class="fa-solid fa-user-group text-gold"></i> Maks. ${room.capacity} Tamu</p>
+      <p style="font-size: 0.85rem; color: var(--text-secondary);"><span style="color: var(--gold-primary); font-weight: 700;">Rp ${Number(room.base_price).toLocaleString('id-ID')}</span> <span style="color: var(--gold-light); font-size: 0.78rem;">($${spec.price_usd})</span> / malam</p>
     </div>
   `;
 
@@ -713,6 +933,11 @@ function openBookingModal(roomTypeId) {
   document.getElementById('bookCheckIn').value = state.searchParams.check_in || document.getElementById('searchCheckIn').value;
   document.getElementById('bookCheckOut').value = state.searchParams.check_out || document.getElementById('searchCheckOut').value;
   document.getElementById('bookGuestCount').value = state.searchParams.guests || 2;
+
+  const bedTypeSelect = document.getElementById('bookBedType');
+  if (bedTypeSelect) {
+    bedTypeSelect.value = /twin/i.test(spec.bed_type || '') ? 'TW' : 'KS';
+  }
 
   recalculateModalPrice();
   openModal('bookingModal');
@@ -735,16 +960,81 @@ function recalculateModalPrice() {
   let nights = Math.ceil((outDate - inDate) / (1000 * 60 * 60 * 24));
   if (nights <= 0) nights = 1;
 
+  const spec = getRoomSpecs(state.selectedRoom);
   const basePrice = Number(state.selectedRoom.base_price);
   const subtotal = basePrice * nights;
   const taxAmount = Math.round(subtotal * TAX_RATE); // 12% Pajak
   const totalPrice = subtotal + taxAmount;
 
-  document.getElementById('calcBasePrice').innerText = `Rp ${basePrice.toLocaleString('id-ID')}`;
+  document.getElementById('calcBasePrice').innerText = `Rp ${basePrice.toLocaleString('id-ID')} ($${spec.price_usd})`;
   document.getElementById('calcNights').innerText = `${nights} Malam`;
   document.getElementById('calcSubtotal').innerText = `Rp ${subtotal.toLocaleString('id-ID')}`;
   document.getElementById('calcTax').innerText = `Rp ${taxAmount.toLocaleString('id-ID')} (12%)`;
   document.getElementById('calcTotal').innerText = `Rp ${totalPrice.toLocaleString('id-ID')}`;
+}
+
+/**
+ * Helper Serialisasi & Parsing Metadata Official Reservation Form
+ */
+function serializeReservationMeta(remarksText, metaObj) {
+  const cleanRemarks = (remarksText || '').trim();
+  const metaJson = JSON.stringify(metaObj || {});
+  return cleanRemarks ? `${cleanRemarks}\n[RESFORM_META:${metaJson}]` : `[RESFORM_META:${metaJson}]`;
+}
+
+function parseReservationMeta(booking) {
+  const raw = String(booking?.special_requests || '');
+  const match = raw.match(/\[RESFORM_META:(\{.*\})\]/s);
+  let parsed = {};
+  if (match && match[1]) {
+    try {
+      parsed = JSON.parse(match[1]);
+    } catch (e) {
+      parsed = {};
+    }
+  }
+  const cleanRemarks = raw.replace(/\n?\[RESFORM_META:\{.*\}\]/s, '').trim();
+  const roomName = booking?.room_type_name || '';
+  const defaultBed = /superior|deluxe/i.test(roomName) ? 'TW' : 'KS';
+
+  const payMethodMap = {
+    bank_transfer: 'Bank Transfer / Virtual Account BCA & Mandiri',
+    ewallet: 'QRIS / E-Wallet (GoPay, OVO, Dana)',
+    credit_card: 'Credit Card / Debit Visa & Mastercard',
+    cash: 'Cash / Pelunasan di Front Desk Resepsionis',
+  };
+  const defaultBilling = payMethodMap[booking?.payment_method] || 'Personal Account (Tamu Pribadi)';
+
+  const isCancelled = (booking?.booking_status || booking?.status) === 'cancelled';
+  const isConfirmed = ['confirmed', 'checked_in', 'completed'].includes(booking?.booking_status || booking?.status) || booking?.payment_status === 'paid';
+
+  const createdDateStr = booking?.created_at
+    ? new Date(booking.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+    : new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+
+  const confirmedDateStr = isConfirmed
+    ? (booking?.paid_at
+        ? new Date(booking.paid_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+        : createdDateStr)
+    : '';
+
+  return {
+    remarks: cleanRemarks || 'Tidak ada catatan khusus',
+    bed_type: parsed.bed_type || defaultBed,
+    address: parsed.address || 'Jakarta, Indonesia',
+    company: parsed.company || '-',
+    arr_flight: parsed.arr_flight || '-',
+    eta: parsed.eta ? `${parsed.eta} WIB` : '14:00 WIB',
+    dep_flight: parsed.dep_flight || '-',
+    etd: parsed.etd ? `${parsed.etd} WIB` : '12:00 WIB',
+    billing: parsed.billing || defaultBilling,
+    res_by: parsed.res_by || 'OTA',
+    form_status: parsed.form_status || (isCancelled ? 'Cancellation' : 'New Booking'),
+    accepted_by: parsed.accepted_by || 'FO Reservation System',
+    accepted_date: parsed.accepted_date || createdDateStr,
+    confirmed_by: parsed.confirmed_by || (isConfirmed ? 'Admin Pakubuwono Edhotel' : ''),
+    confirmed_date: parsed.confirmed_date || confirmedDateStr,
+  };
 }
 
 /**
@@ -757,7 +1047,21 @@ async function handleCreateBookingSubmit(e) {
   const check_in_date = document.getElementById('bookCheckIn').value;
   const check_out_date = document.getElementById('bookCheckOut').value;
   const guest_count = parseInt(document.getElementById('bookGuestCount').value);
-  const special_requests = document.getElementById('bookSpecialRequests').value.trim();
+  const rawRemarks = document.getElementById('bookSpecialRequests')?.value?.trim() || '';
+
+  const resFormMeta = {
+    bed_type: document.getElementById('bookBedType')?.value || 'KS',
+    address: document.getElementById('bookGuestAddress')?.value?.trim() || '',
+    company: document.getElementById('bookCompanyName')?.value?.trim() || '',
+    arr_flight: document.getElementById('bookArrivalFlight')?.value?.trim() || '',
+    eta: document.getElementById('bookArrivalEta')?.value || '14:00',
+    dep_flight: document.getElementById('bookDepartureFlight')?.value?.trim() || '',
+    etd: document.getElementById('bookDepartureEtd')?.value || '12:00',
+    billing: document.getElementById('bookBillingInstruction')?.value || 'Personal Account (Tamu Pribadi)',
+    res_by: 'OTA',
+  };
+
+  const special_requests = serializeReservationMeta(rawRemarks, resFormMeta);
   const submitBtn = document.getElementById('submitBookingBtn');
 
   submitBtn.disabled = true;
@@ -833,7 +1137,7 @@ function openPaymentModal(paymentData) {
     detailsArea.innerHTML = `
       <span class="section-tag">Tagihan Deposit Restoran</span>
       <h3 class="font-serif" style="font-size: 1.5rem; margin-bottom: 4px;">Kode: ${r.reservation_code}</h3>
-      <p style="color: var(--text-secondary); font-size: 0.9rem;">Restoran Angie • ${r.guest_count} Orang • Sesi ${sessionStr}</p>
+      <p style="color: var(--text-secondary); font-size: 0.9rem;">Andrawina Restaurant (1st Floor) • ${r.guest_count} Orang • Sesi ${sessionStr}</p>
       <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 2px;">Tanggal: ${dateStr}</p>
       <div style="font-size: 1.8rem; font-weight: 700; color: var(--gold-light); margin: 12px 0;">
         Rp ${amount.toLocaleString('id-ID')}
@@ -849,7 +1153,7 @@ function openPaymentModal(paymentData) {
     detailsArea.innerHTML = `
       <span class="section-tag">Tagihan Sewa Ballroom & MICE</span>
       <h3 class="font-serif" style="font-size: 1.5rem; margin-bottom: 4px;">Kode: ${v.venue_booking_code}</h3>
-      <p style="color: var(--text-secondary); font-size: 0.9rem;">${v.venue_name || 'Grand Luxury Ballroom'} • ${durLabel}</p>
+      <p style="color: var(--text-secondary); font-size: 0.9rem;">${v.venue_name || 'Pakubuwono Grand Ballroom (2nd Floor)'} • ${durLabel}</p>
       <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 2px;">Tanggal: ${dateStr} • Layout: ${v.layout_type} (${v.attendee_count} Orang)</p>
       <div style="font-size: 1.8rem; font-weight: 700; color: var(--gold-light); margin: 12px 0;">
         Rp ${amount.toLocaleString('id-ID')}
@@ -898,7 +1202,7 @@ function renderPaymentInstructions() {
     box.innerHTML = `
       <div style="text-align: center;">
         <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 10px;">Pindai QRIS (GoPay, OVO, ShopeePay, Dana):</p>
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=LUXURY-HOTEL-PAYMENT" style="margin: 0 auto; border-radius: 8px; border: 2px solid var(--gold-border);">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=PAKUBUWONO-EDHOTEL-PAYMENT" style="margin: 0 auto; border-radius: 8px; border: 2px solid var(--gold-border);">
         <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Buka aplikasi e-wallet Anda dan scan QR di atas.</p>
       </div>
     `;
@@ -1009,10 +1313,412 @@ async function handleProcessPayment() {
 }
 
 /**
- * Menampilkan E-Voucher Hotel Digital & Printable
+ * Memastikan elemen Modal E-Voucher & Reservation Form ada di DOM
  */
-async function openVoucherModal(bookingIdOrCode) {
+function ensureVoucherModalExists() {
+  if (document.getElementById('voucherModal')) return;
+
+  const modalHtml = `
+  <div class="modal-overlay" id="voucherModal">
+    <div class="modal-content" style="max-width: 820px;">
+      <div class="modal-header">
+        <h3 class="modal-title font-serif" id="voucherModalTitle">E-Voucher & Reservation Form</h3>
+        <button class="modal-close" onclick="closeModal('voucherModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
+          <button type="button" class="btn btn-gold btn-sm" id="tabBtnEvoucher" onclick="switchVoucherView('evoucher')" style="flex: 1;">
+            <i class="fa-solid fa-receipt"></i> E-Voucher Digital
+          </button>
+          <button type="button" class="btn btn-outline-gold btn-sm" id="tabBtnResForm" onclick="switchVoucherView('resform')" style="flex: 1;">
+            <i class="fa-solid fa-file-contract"></i> Official Reservation Form (Standar Edhotel)
+          </button>
+        </div>
+        <div id="voucherPrintArea" class="printable-voucher" style="background: #ffffff; color: #0f172a; padding: 28px; border-radius: var(--radius-sm); border: 2px solid #c5a059;">
+        </div>
+        <div style="display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;" id="voucherActionButtons">
+          <button class="btn btn-gold" style="flex: 1;" onclick="window.print()">
+            <i class="fa-solid fa-print"></i> Cetak / Simpan PDF
+          </button>
+          <button class="btn btn-outline-danger" id="voucherCancelBtn" onclick="handleCancelVoucherBooking()">
+            <i class="fa-solid fa-ban"></i> Batalkan Reservasi
+          </button>
+          <button class="btn btn-glass" onclick="closeModal('voucherModal')">Tutup</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+  const newOverlay = document.getElementById('voucherModal');
+  if (newOverlay) {
+    newOverlay.addEventListener('click', (e) => {
+      if (e.target === newOverlay) newOverlay.classList.remove('active');
+    });
+  }
+}
+
+/**
+ * Render HTML untuk E-Voucher Digital Modern
+ */
+function renderEvoucherHTML(b, p) {
+  const meta = parseReservationMeta(b);
+  let statusBadgeColor = '#10b981';
+  if (b.booking_status === 'pending') statusBadgeColor = '#f59e0b';
+  if (b.booking_status === 'cancelled') statusBadgeColor = '#ef4444';
+
+  return `
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0f172a; padding-bottom: 16px; margin-bottom: 20px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <img src="assets/images/logo-pakubuwono.png" alt="Pakubuwono Edhotel" style="height: 48px; width: auto; background: #0f172a; padding: 6px 10px; border-radius: 8px;">
+        <div>
+          <h2 style="font-family: 'Playfair Display', serif; font-size: 1.45rem; margin: 0; color: #070a12; letter-spacing: 1.5px;">PAKUBUWONO</h2>
+          <span style="font-size: 0.72rem; letter-spacing: 2.5px; color: #c5a059; font-weight: 700;">EDHOTEL • SMKN 30 JAKARTA</span>
+        </div>
+      </div>
+      <div style="text-align: right;">
+        <span style="background: ${statusBadgeColor}; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">
+          ${b.booking_status}
+        </span>
+        <p style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">Kode: <strong>${b.booking_code}</strong></p>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+      <div>
+        <p style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; margin-bottom: 2px;">Nama Tamu</p>
+        <h4 style="font-size: 1.1rem; color: #0f172a;">${b.guest_name}</h4>
+        <p style="font-size: 0.85rem; color: #475569;">${b.guest_email} • ${b.guest_phone || '-'}</p>
+        <p style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">Alamat: ${meta.address}</p>
+      </div>
+      <div>
+        <p style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; margin-bottom: 2px;">Akomodasi</p>
+        <h4 style="font-size: 1.1rem; color: #0f172a;">${b.room_type_name} (${meta.bed_type === 'TW' ? 'Twin Bed' : 'King Size'})</h4>
+        <p style="font-size: 0.85rem; color: #475569;">Nomor Kamar: <strong>#${b.room_number}</strong> (Lantai ${b.floor}) • ${b.guest_count || 2} Tamu</p>
+      </div>
+    </div>
+
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; text-align: center;">
+      <div>
+        <span style="font-size: 0.75rem; color: #64748b;">CHECK-IN (ETA ${meta.eta})</span>
+        <p style="font-weight: 700; color: #0f172a; margin-top: 2px;">${b.check_in_date}</p>
+      </div>
+      <div>
+        <span style="font-size: 0.75rem; color: #64748b;">CHECK-OUT (ETD ${meta.etd})</span>
+        <p style="font-weight: 700; color: #0f172a; margin-top: 2px;">${b.check_out_date}</p>
+      </div>
+      <div>
+        <span style="font-size: 0.75rem; color: #64748b;">DURASI</span>
+        <p style="font-weight: 700; color: #0f172a; margin-top: 2px;">${b.total_nights} Malam</p>
+      </div>
+    </div>
+
+    <div style="border-top: 1px dashed #cbd5e1; padding-top: 14px; margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 6px; color: #475569;">
+        <span>Subtotal (${b.total_nights} Malam)</span>
+        <span>Rp ${Number(p.subtotal).toLocaleString('id-ID')}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 6px; color: #475569;">
+        <span>Pajak & Layanan Hotel (12%)</span>
+        <span>Rp ${Number(p.tax_amount).toLocaleString('id-ID')}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 1.15rem; font-weight: 800; color: #0f172a; border-top: 1px solid #e2e8f0; padding-top: 8px;">
+        <span>TOTAL DIBAYAR</span>
+        <span style="color: #c5a059;">Rp ${Number(p.total_price).toLocaleString('id-ID')}</span>
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #94a3b8;">
+      <span>Metode: ${(b.payment_method || 'Virtual Account').toUpperCase()} • Status: ${b.payment_status === 'paid' ? 'LUNAS (PAID)' : (b.payment_status === 'waiting_verification' ? 'MENUNGGU VERIFIKASI ADMIN' : 'BELUM DIBAYAR')}</span>
+      <span>Dicetak pada: ${new Date().toLocaleDateString('id-ID')}</span>
+    </div>
+  `;
+}
+
+/**
+ * Render HTML 1:1 sesuai Dokumen PDF "RESERVATION FORM" Pakubuwono Edotel SMKN 30 Jakarta
+ */
+function renderOfficialReservationFormHTML(b, p) {
+  const meta = parseReservationMeta(b);
+  const activeStatus = state.resFormOverrideStatus || meta.form_status;
+  const activeResBy = state.resFormOverrideResBy || meta.res_by;
+  const activeBed = state.resFormOverrideBed || meta.bed_type;
+
+  const roomRows = [
+    { label: 'Superior', matchKey: 'Superior Room', rateIdr: 785000, rateUsd: 50 },
+    { label: 'Deluxe', matchKey: 'Deluxe Room', rateIdr: 1020000, rateUsd: 65 },
+    { label: 'Executive', matchKey: 'Executive Room', rateIdr: 1255000, rateUsd: 80 },
+    { label: 'Junior Suite', matchKey: 'Junior Suite Room', rateIdr: 1490000, rateUsd: 95 },
+    { label: 'Suite', matchKey: 'Suite Room', rateIdr: 1725000, rateUsd: 110 },
+    { label: 'Presedential', matchKey: 'Presidential Suite', rateIdr: 3925000, rateUsd: 250 },
+  ];
+
+  const resByOptions = ['Phone', 'Letter', 'Email', 'Personal', 'OTA', 'Others'];
+
+  const dottedLineStyle = 'border-bottom: 1.5px dotted #1e293b; display: inline-block; padding: 0 6px 1px; font-weight: 600; color: #0f172a; min-height: 20px;';
+
+  return `
+    <div class="official-resform-sheet" style="font-family: 'Times New Roman', Georgia, serif; color: #000000; background: #ffffff; padding: 10px 14px; line-height: 1.45; font-size: 0.95rem;">
+      <!-- 1. TOP HEADER: LOGO + TITLE + RESERVATION NO -->
+      <div style="display: grid; grid-template-columns: 190px 1fr 220px; align-items: center; margin-bottom: 18px;">
+        <div style="text-align: center;">
+          <img src="assets/images/logo-emblem.png" alt="Pakubuwono Edotel" style="height: 46px; width: auto; object-fit: contain; display: block; margin: 0 auto 2px;">
+          <div style="font-family: 'Playfair Display', 'Times New Roman', serif; font-weight: 800; font-size: 1.02rem; letter-spacing: 1.5px; color: #b89146; line-height: 1.1;">PAKUBUWONO</div>
+          <div style="font-size: 0.68rem; font-weight: 700; letter-spacing: 2px; color: #b89146; line-height: 1.15;">EDOTEL</div>
+          <div style="font-size: 0.52rem; font-weight: 700; letter-spacing: 1.2px; color: #b89146;">SMKN 30 JAKARTA</div>
+        </div>
+        <div style="text-align: center;">
+          <h2 style="font-family: 'Times New Roman', Georgia, serif; font-size: 1.5rem; font-weight: 400; letter-spacing: 1px; margin: 0; color: #000;">RESERVATION FORM</h2>
+        </div>
+        <div style="text-align: right; align-self: end; font-size: 0.92rem;">
+          <span>Reservation No. : </span>
+          <span style="${dottedLineStyle} min-width: 110px; text-align: center; font-family: monospace; font-size: 0.92rem;">${b.booking_code}</span>
+        </div>
+      </div>
+
+      <!-- 2. THREE STATUS BOXES: NEW BOOKING | AMANDEMENT | CANCELLATION -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin: 14px 0 24px; padding: 0 6px;">
+        ${['New Booking', 'Amandement', 'Cancellation'].map(st => {
+          const isChecked = activeStatus === st;
+          return `
+            <div style="text-align: center; cursor: pointer; user-select: none;" onclick="toggleResFormBox('status', '${st}')" title="Klik untuk memilih status ${st}">
+              <div style="width: 124px; height: 32px; border: 1.5px solid #000; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 800; color: #0f172a; background: ${isChecked ? 'rgba(197, 160, 89, 0.14)' : '#fff'};">
+                ${isChecked ? '&#10003;' : ''}
+              </div>
+              <div style="font-size: 0.92rem; margin-top: 4px; color: #000;">${st}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      <!-- 3. GUEST NAME, PAX, ARRIVAL & DEPARTURE -->
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+        <div style="display: flex; align-items: baseline;">
+          <span style="width: 145px; flex-shrink: 0;">Name of Guest</span>
+          <span style="margin-right: 6px;">:</span>
+          <span style="${dottedLineStyle} flex: 1;">${b.guest_name} (Room #${b.room_number} - Floor ${b.floor})</span>
+        </div>
+
+        <div style="display: flex; align-items: baseline;">
+          <span style="width: 145px; flex-shrink: 0;">Number of Person</span>
+          <span style="margin-right: 6px;">:</span>
+          <span style="${dottedLineStyle} width: 90px; text-align: center;">${b.guest_count || 2} Adult</span>
+          <span style="margin: 0 4px; font-weight: 700;">/</span>
+          <span style="${dottedLineStyle} width: 120px; text-align: center;">0 Child (${b.total_nights} Night${b.total_nights > 1 ? 's' : ''})</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1.2fr 1fr 0.9fr; gap: 12px; align-items: baseline; margin-top: 6px;">
+          <div style="display: flex; align-items: baseline;">
+            <span style="width: 90px; flex-shrink: 0;">Arrival</span>
+            <span style="margin-right: 6px;">:</span>
+            <span style="${dottedLineStyle} flex: 1; text-align: center;">${b.check_in_date}</span>
+          </div>
+          <div style="display: flex; align-items: baseline;">
+            <span style="width: 78px; flex-shrink: 0;">Flight No.</span>
+            <span style="margin-right: 6px;">:</span>
+            <span style="${dottedLineStyle} flex: 1; text-align: center;">${meta.arr_flight}</span>
+          </div>
+          <div style="display: flex; align-items: baseline;">
+            <span style="width: 48px; flex-shrink: 0;">ETA</span>
+            <span style="margin-right: 6px;">:</span>
+            <span style="${dottedLineStyle} flex: 1; text-align: center;">${meta.eta}</span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1.2fr 1fr 0.9fr; gap: 12px; align-items: baseline;">
+          <div style="display: flex; align-items: baseline;">
+            <span style="width: 90px; flex-shrink: 0;">Departure</span>
+            <span style="margin-right: 6px;">:</span>
+            <span style="${dottedLineStyle} flex: 1; text-align: center;">${b.check_out_date}</span>
+          </div>
+          <div style="display: flex; align-items: baseline;">
+            <span style="width: 78px; flex-shrink: 0;">Flight No.</span>
+            <span style="margin-right: 6px;">:</span>
+            <span style="${dottedLineStyle} flex: 1; text-align: center;">${meta.dep_flight}</span>
+          </div>
+          <div style="display: flex; align-items: baseline;">
+            <span style="width: 48px; flex-shrink: 0;">ETD</span>
+            <span style="margin-right: 6px;">:</span>
+            <span style="${dottedLineStyle} flex: 1; text-align: center;">${meta.etd}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. TWO TABLES: RESERVATION BY & TYPE OF ROOM / BED TYPE / RATE -->
+      <div style="display: grid; grid-template-columns: 185px 1fr; gap: 24px; margin-bottom: 22px; align-items: start;">
+        <!-- Left Table: Reservation by -->
+        <table style="width: 100%; border-collapse: collapse; border: 1.2px solid #000; font-size: 0.88rem;">
+          <thead>
+            <tr>
+              <th colspan="2" style="border: 1px solid #000; padding: 4px 8px; text-align: center; font-weight: 600;">Reservation by</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${resByOptions.map((opt, idx) => {
+              const isChecked = activeResBy.toLowerCase() === opt.toLowerCase();
+              return `
+                <tr style="cursor: pointer;" onclick="toggleResFormBox('resBy', '${opt}')" title="Klik untuk memilih ${opt}">
+                  <td style="border: 1px solid #000; padding: 3px 8px; text-align: center; width: 76%;">${opt}</td>
+                  <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: 800; background: ${isChecked ? 'rgba(197, 160, 89, 0.16)' : '#fff'};">${isChecked ? '&#10003;' : ''}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+
+        <!-- Right Table: Type of Room | Check | Bed Type | Rate -->
+        <table style="width: 100%; border-collapse: collapse; border: 1.2px solid #000; font-size: 0.88rem;">
+          <thead>
+            <tr>
+              <th colspan="2" style="border: 1px solid #000; padding: 4px 8px; text-align: center; font-weight: 600;">Type of Room</th>
+              <th style="border: 1px solid #000; padding: 4px 8px; text-align: center; font-weight: 600; width: 92px;">Bed Type</th>
+              <th style="border: 1px solid #000; padding: 4px 8px; text-align: center; font-weight: 600;">Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${roomRows.map(r => {
+              const isSelectedRoom = (b.room_type_name || '').toLowerCase() === r.matchKey.toLowerCase();
+              const bedDisplay = isSelectedRoom
+                ? `<span style="cursor:pointer;" onclick="toggleResFormBox('bed', '${activeBed === 'TW' ? 'KS' : 'TW'}')" title="Klik untuk ganti TW/KS">
+                     <strong style="${activeBed === 'TW' ? 'border: 1.5px solid #000; border-radius: 10px; padding: 0 4px; background: rgba(197,160,89,0.2);' : 'color: #64748b;'}">TW</strong>/<strong style="${activeBed === 'KS' ? 'border: 1.5px solid #000; border-radius: 10px; padding: 0 4px; background: rgba(197,160,89,0.2);' : 'color: #64748b;'}">KS</strong>
+                   </span>`
+                : 'TW/KS';
+
+              const rateDisplay = isSelectedRoom
+                ? `<strong>Rp ${r.rateIdr.toLocaleString('id-ID')} ($${r.rateUsd}) / night</strong>`
+                : `<span style="color: #64748b; font-size: 0.8rem;">Rp ${r.rateIdr.toLocaleString('id-ID')} ($${r.rateUsd})</span>`;
+
+              return `
+                <tr style="background: ${isSelectedRoom ? 'rgba(197, 160, 89, 0.14)' : '#fff'};">
+                  <td style="border: 1px solid #000; padding: 3px 10px; text-align: center; width: 34%; font-weight: ${isSelectedRoom ? '700' : '400'};">${r.label}</td>
+                  <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; width: 36px; font-weight: 800;">${isSelectedRoom ? '&#10003;' : ''}</td>
+                  <td style="border: 1px solid #000; padding: 3px 6px; text-align: center;">${bedDisplay}</td>
+                  <td style="border: 1px solid #000; padding: 3px 10px; text-align: center;">${rateDisplay}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 5. COMPANY, ADDRESS, EMAIL, PHONE, REMARKS & BILLING INSTRUCTION -->
+      <div style="display: flex; flex-direction: column; gap: 9px; margin-bottom: 24px;">
+        <div style="display: flex; align-items: baseline;">
+          <span style="width: 145px; flex-shrink: 0;">Company Name</span>
+          <span style="margin-right: 6px;">:</span>
+          <span style="${dottedLineStyle} flex: 1;">${meta.company}</span>
+        </div>
+
+        <div style="display: flex; align-items: baseline;">
+          <span style="width: 145px; flex-shrink: 0;">Address</span>
+          <span style="margin-right: 6px;">:</span>
+          <span style="${dottedLineStyle} flex: 1;">${meta.address}</span>
+        </div>
+
+        <div style="display: flex; align-items: baseline;">
+          <span style="width: 145px; flex-shrink: 0;"></span>
+          <span style="margin-right: 6px; visibility: hidden;">:</span>
+          <span style="${dottedLineStyle} flex: 1;">&nbsp;</span>
+        </div>
+
+        <div style="display: flex; align-items: baseline;">
+          <span style="width: 145px; flex-shrink: 0;">Email</span>
+          <span style="margin-right: 6px;">:</span>
+          <span style="${dottedLineStyle} flex: 1;">${b.guest_email}</span>
+        </div>
+
+        <div style="display: flex; align-items: baseline;">
+          <span style="width: 145px; flex-shrink: 0;">Phone Number</span>
+          <span style="margin-right: 6px;">:</span>
+          <span style="${dottedLineStyle} flex: 1;">${b.guest_phone || '-'}</span>
+        </div>
+
+        <div style="display: flex; align-items: baseline;">
+          <span style="width: 145px; flex-shrink: 0;">Remarks</span>
+          <span style="margin-right: 6px;">:</span>
+          <span style="${dottedLineStyle} flex: 1;">${meta.remarks}</span>
+        </div>
+
+        <div style="display: flex; align-items: baseline;">
+          <span style="width: 145px; flex-shrink: 0;">Billing Instruction</span>
+          <span style="margin-right: 6px;">:</span>
+          <span style="${dottedLineStyle} flex: 1;">${meta.billing} — Total (Inc. 12% Tax): Rp ${Number(p.total_price).toLocaleString('id-ID')} (${b.payment_status === 'paid' ? 'PAID' : 'UNPAID'})</span>
+        </div>
+      </div>
+
+      <!-- 6. FOOTER SIGN-OFF: ACCEPTED BY & CONFIRMATION BY -->
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px; padding-top: 6px;">
+        <div style="display: grid; grid-template-columns: 1.25fr 1fr; gap: 24px; align-items: baseline;">
+          <div style="display: flex; align-items: baseline;">
+            <span style="width: 135px; flex-shrink: 0;">Accepted by</span>
+            <span style="margin-right: 6px;">:</span>
+            <span style="${dottedLineStyle} flex: 1; text-align: center;">${meta.accepted_by}</span>
+          </div>
+          <div style="display: flex; align-items: baseline;">
+            <span style="width: 55px; flex-shrink: 0;">Date</span>
+            <span style="margin-right: 6px;">:</span>
+            <span style="${dottedLineStyle} flex: 1; text-align: center;">${meta.accepted_date}</span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1.25fr 1fr; gap: 24px; align-items: baseline;">
+          <div style="display: flex; align-items: baseline;">
+            <span style="width: 135px; flex-shrink: 0;">Confirmation by</span>
+            <span style="margin-right: 6px;">:</span>
+            <span style="${dottedLineStyle} flex: 1; text-align: center;">${meta.confirmed_by || '&nbsp;'}</span>
+          </div>
+          <div style="display: flex; align-items: baseline;">
+            <span style="width: 55px; flex-shrink: 0;">Date</span>
+            <span style="margin-right: 6px;">:</span>
+            <span style="${dottedLineStyle} flex: 1; text-align: center;">${meta.confirmed_date || '&nbsp;'}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Interaktif toggle kotak pada Official Reservation Form sebelum cetak
+ */
+function toggleResFormBox(type, value) {
+  if (type === 'status') state.resFormOverrideStatus = value;
+  if (type === 'resBy') state.resFormOverrideResBy = value;
+  if (type === 'bed') state.resFormOverrideBed = value;
+  if (state.activeVoucherData) {
+    switchVoucherView('resform');
+  }
+}
+
+/**
+ * Beralih antara tampilan E-Voucher Digital dan Official Reservation Form
+ */
+function switchVoucherView(mode = 'evoucher') {
+  if (!state.activeVoucherData) return;
+  const { booking, pricing } = state.activeVoucherData;
+  const voucherArea = document.getElementById('voucherPrintArea');
+  const btnEvoucher = document.getElementById('tabBtnEvoucher');
+  const btnResForm = document.getElementById('tabBtnResForm');
+
+  if (!voucherArea) return;
+
+  if (mode === 'resform') {
+    voucherArea.innerHTML = renderOfficialReservationFormHTML(booking, pricing);
+    if (btnEvoucher) btnEvoucher.className = 'btn btn-outline-gold btn-sm';
+    if (btnResForm) btnResForm.className = 'btn btn-gold btn-sm';
+  } else {
+    voucherArea.innerHTML = renderEvoucherHTML(booking, pricing);
+    if (btnEvoucher) btnEvoucher.className = 'btn btn-gold btn-sm';
+    if (btnResForm) btnResForm.className = 'btn btn-outline-gold btn-sm';
+  }
+}
+
+/**
+ * Menampilkan E-Voucher Hotel Digital & Official Reservation Form Printable
+ */
+async function openVoucherModal(bookingIdOrCode, initialMode = 'evoucher') {
   try {
+    ensureVoucherModalExists();
     const res = await fetch(`${API_BASE}/bookings/${bookingIdOrCode}`, {
       headers: { 'Authorization': `Bearer ${state.token}` },
     });
@@ -1023,10 +1729,13 @@ async function openVoucherModal(bookingIdOrCode) {
     const b = data.data.booking;
     const p = data.data.pricing_breakdown;
     state.activeVoucherBookingId = b.id;
+    state.activeVoucherData = { booking: b, pricing: p };
+    state.resFormOverrideStatus = null;
+    state.resFormOverrideResBy = null;
+    state.resFormOverrideBed = null;
 
     const voucherCancelBtn = document.getElementById('voucherCancelBtn');
     if (voucherCancelBtn) {
-      // Sembunyikan tombol batalkan jika sudah cancelled atau completed
       if (b.booking_status === 'cancelled' || b.booking_status === 'completed' || b.booking_status === 'checked_out') {
         voucherCancelBtn.style.display = 'none';
       } else {
@@ -1034,74 +1743,7 @@ async function openVoucherModal(bookingIdOrCode) {
       }
     }
 
-    let statusBadgeColor = '#10b981';
-    if (b.booking_status === 'pending') statusBadgeColor = '#f59e0b';
-    if (b.booking_status === 'cancelled') statusBadgeColor = '#ef4444';
-
-    const voucherArea = document.getElementById('voucherPrintArea');
-    voucherArea.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0f172a; padding-bottom: 16px; margin-bottom: 20px;">
-        <div>
-          <h2 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; margin: 0; color: #070a12; letter-spacing: 2px;">LUXURY</h2>
-          <span style="font-size: 0.75rem; letter-spacing: 3px; color: #c5a059; font-weight: 700;">HOTEL & RESORT</span>
-        </div>
-        <div style="text-align: right;">
-          <span style="background: ${statusBadgeColor}; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">
-            ${b.booking_status}
-          </span>
-          <p style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">Kode: <strong>${b.booking_code}</strong></p>
-        </div>
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-        <div>
-          <p style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; margin-bottom: 2px;">Nama Tamu</p>
-          <h4 style="font-size: 1.1rem; color: #0f172a;">${b.guest_name}</h4>
-          <p style="font-size: 0.85rem; color: #475569;">${b.guest_email} • ${b.guest_phone || '-'}</p>
-        </div>
-        <div>
-          <p style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; margin-bottom: 2px;">Akomodasi</p>
-          <h4 style="font-size: 1.1rem; color: #0f172a;">${b.room_type_name}</h4>
-          <p style="font-size: 0.85rem; color: #475569;">Nomor Kamar: <strong>#${b.room_number}</strong> (Lantai ${b.floor})</p>
-        </div>
-      </div>
-
-      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; text-align: center;">
-        <div>
-          <span style="font-size: 0.75rem; color: #64748b;">CHECK-IN</span>
-          <p style="font-weight: 700; color: #0f172a; margin-top: 2px;">${b.check_in_date}</p>
-        </div>
-        <div>
-          <span style="font-size: 0.75rem; color: #64748b;">CHECK-OUT</span>
-          <p style="font-weight: 700; color: #0f172a; margin-top: 2px;">${b.check_out_date}</p>
-        </div>
-        <div>
-          <span style="font-size: 0.75rem; color: #64748b;">DURASI</span>
-          <p style="font-weight: 700; color: #0f172a; margin-top: 2px;">${b.total_nights} Malam</p>
-        </div>
-      </div>
-
-      <div style="border-top: 1px dashed #cbd5e1; padding-top: 14px; margin-bottom: 20px;">
-        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 6px; color: #475569;">
-          <span>Subtotal (${b.total_nights} Malam)</span>
-          <span>Rp ${Number(p.subtotal).toLocaleString('id-ID')}</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 6px; color: #475569;">
-          <span>Pajak & Layanan Hotel (12%)</span>
-          <span>Rp ${Number(p.tax_amount).toLocaleString('id-ID')}</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 1.15rem; font-weight: 800; color: #0f172a; border-top: 1px solid #e2e8f0; padding-top: 8px;">
-          <span>TOTAL DIBAYAR</span>
-          <span style="color: #c5a059;">Rp ${Number(p.total_price).toLocaleString('id-ID')}</span>
-        </div>
-      </div>
-
-      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #94a3b8;">
-        <span>Metode: ${(b.payment_method || 'Virtual Account').toUpperCase()} • Status: ${b.payment_status === 'paid' ? 'LUNAS (PAID)' : (b.payment_status === 'waiting_verification' ? 'MENUNGGU VERIFIKASI ADMIN' : 'BELUM DIBAYAR')}</span>
-        <span>Dicetak pada: ${new Date().toLocaleDateString('id-ID')}</span>
-      </div>
-    `;
-
+    switchVoucherView(initialMode);
     openModal('voucherModal');
   } catch (err) {
     showToast(err.message, 'error');
@@ -1304,8 +1946,11 @@ async function openMyBookingsModal() {
           <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 8px;">
             <span style="font-weight: 700; color: var(--gold-primary);">Rp ${Number(b.total_price).toLocaleString('id-ID')} (Inc. Tax 12%)</span>
             <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-              <button class="btn btn-outline-gold btn-sm" onclick="openVoucherModal('${b.id}')">
+              <button class="btn btn-outline-gold btn-sm" onclick="openVoucherModal('${b.id}', 'evoucher')">
                 <i class="fa-solid fa-file-invoice"></i> E-Voucher
+              </button>
+              <button class="btn btn-outline-gold btn-sm" onclick="openVoucherModal('${b.id}', 'resform')" title="Lihat & Cetak Official Reservation Form (Standar Edhotel)">
+                <i class="fa-solid fa-file-contract"></i> Reservation Form
               </button>
               ${isReviewed ? `
                 <span style="font-size: 0.8rem; font-weight: 600; color: var(--gold-light); background: rgba(212,175,55,0.12); border: 1px solid var(--gold-border); padding: 4px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px;">
@@ -1335,7 +1980,7 @@ async function openMyBookingsModal() {
 
     // Render Restoran
     if (restBookings.length > 0) {
-      html += `<h4 style="color: var(--gold-light); margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid var(--gold-border); padding-bottom: 5px;"><i class="fa-solid fa-utensils"></i> Reservasi Restoran Angie</h4>`;
+      html += `<h4 style="color: var(--gold-light); margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid var(--gold-border); padding-bottom: 5px;"><i class="fa-solid fa-utensils"></i> Reservasi Andrawina Restaurant (1st Floor)</h4>`;
       html += restBookings.map(b => {
         let badgeClass = 'var(--accent-amber)';
         if (b.status === 'confirmed') badgeClass = 'var(--accent-emerald)';
@@ -1554,8 +2199,9 @@ function openRestaurantVoucher(b) {
 
   printArea.innerHTML = `
     <div style="text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 20px; margin-bottom: 20px;">
-      <h2 style="margin: 0; font-family: serif; color: #c5a059;">LUXURY HOTEL & RESORT</h2>
-      <p style="margin: 5px 0 0; color: #666; font-size: 0.9rem;">Restoran "Angie" - Bukti Reservasi & Deposit Meja</p>
+      <img src="assets/images/logo-pakubuwono.png" alt="Pakubuwono Edhotel" style="height: 48px; width: auto; background: #0f172a; padding: 6px 12px; border-radius: 8px; margin: 0 auto 8px;">
+      <h2 style="margin: 0; font-family: serif; color: #c5a059;">PAKUBUWONO EDHOTEL — SMKN 30 JAKARTA</h2>
+      <p style="margin: 5px 0 0; color: #666; font-size: 0.9rem;">Andrawina Restaurant (1st Floor) - Bukti Reservasi & Deposit Meja</p>
     </div>
     
     <div style="display: flex; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
@@ -1608,7 +2254,7 @@ function openRestaurantVoucher(b) {
     </div>
     
     <div style="text-align: center; font-size: 0.8rem; color: #888;">
-      Tunjukkan Bukti Reservasi ini kepada resepsionis restoran Angie saat kedatangan. Deposit akan otomatis memotong tagihan bersantap Anda.
+      Tunjukkan Bukti Reservasi ini kepada resepsionis Andrawina Restaurant (Lantai 1) saat kedatangan. Deposit akan otomatis memotong tagihan bersantap Anda.
     </div>
   `;
   openModal('restaurantVoucherModal');
@@ -1641,8 +2287,9 @@ function openVenueVoucher(b) {
 
   printArea.innerHTML = `
     <div style="text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 20px; margin-bottom: 20px;">
-      <h2 style="margin: 0; font-family: serif; color: #c5a059;">LUXURY HOTEL & RESORT</h2>
-      <p style="margin: 5px 0 0; color: #666; font-size: 0.9rem;">Grand Ballroom & MICE - Bukti Reservasi & Invoice</p>
+      <img src="assets/images/logo-pakubuwono.png" alt="Pakubuwono Edhotel" style="height: 48px; width: auto; background: #0f172a; padding: 6px 12px; border-radius: 8px; margin: 0 auto 8px;">
+      <h2 style="margin: 0; font-family: serif; color: #c5a059;">PAKUBUWONO EDHOTEL — SMKN 30 JAKARTA</h2>
+      <p style="margin: 5px 0 0; color: #666; font-size: 0.9rem;">Ballroom & Meeting Room (2nd Floor) - Bukti Reservasi & Invoice</p>
     </div>
     
     <div style="display: flex; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
@@ -1663,7 +2310,7 @@ function openVenueVoucher(b) {
       </tr>
       <tr>
         <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>Venue Terpilih</strong></td>
-        <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right; color: #c5a059; font-weight: bold;">${b.venue_name || 'Grand Luxury Ballroom'}</td>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right; color: #c5a059; font-weight: bold;">${b.venue_name || 'Pakubuwono Grand Ballroom (2nd Floor)'}</td>
       </tr>
       <tr>
         <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>Tanggal Acara</strong></td>
@@ -1807,7 +2454,7 @@ async function fetchHotelReviews() {
           <i class="fa-solid fa-star-half-stroke text-gold" style="font-size: 2.5rem; margin-bottom: 12px; display: block;"></i>
           <h4 style="color: var(--gold-light); margin-bottom: 6px;">Belum Ada Ulasan Tamu</h4>
           <p style="color: var(--text-secondary); max-width: 480px; margin: 0 auto 16px; font-size: 0.9rem;">
-            Jadilah yang pertama membagikan pengalaman dan penilaian Anda menginap di LUXURY Hotel.
+            Jadilah yang pertama membagikan pengalaman dan penilaian Anda menginap di Pakubuwono Edhotel (SMKN 30 Jakarta).
           </p>
           <button class="btn btn-gold btn-sm" onclick="openReviewModal()">
             <i class="fa-solid fa-pen"></i> Tulis Ulasan Pertama
