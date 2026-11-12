@@ -1186,220 +1186,219 @@ function renderAdminOfficialReservationFormHTML(b, p) {
   ];
 
   const resByOptions = ['Phone', 'Letter', 'Email', 'Personal', 'OTA', 'Others'];
-  const dottedLineStyle = 'border-bottom: 1.5px dotted #1e293b; display: inline-block; padding: 0 6px 1px; font-weight: 600; color: #0f172a; min-height: 20px;';
 
   return `
-    <div class="official-resform-sheet" style="font-family: 'Times New Roman', Georgia, serif; color: #000000; background: #ffffff; padding: 10px 14px; line-height: 1.45; font-size: 0.95rem;">
-      <!-- 1. TOP HEADER -->
-      <div style="display: grid; grid-template-columns: 190px 1fr 220px; align-items: center; margin-bottom: 18px;">
-        <div style="text-align: center;">
-          <img src="assets/images/logo-emblem.png" alt="Pakubuwono Edotel" style="height: 46px; width: auto; object-fit: contain; display: block; margin: 0 auto 2px;">
-          <div style="font-family: 'Playfair Display', 'Times New Roman', serif; font-weight: 800; font-size: 1.02rem; letter-spacing: 1.5px; color: #b89146; line-height: 1.1;">PAKUBUWONO</div>
-          <div style="font-size: 0.68rem; font-weight: 700; letter-spacing: 2px; color: #b89146; line-height: 1.15;">EDOTEL</div>
-          <div style="font-size: 0.52rem; font-weight: 700; letter-spacing: 1.2px; color: #b89146;">SMKN 30 JAKARTA</div>
+    <div class="official-resform-sheet">
+      <!-- 1. TOP HEADER: LOGO + TITLE + RESERVATION NO -->
+      <div class="resform-header">
+        <div class="resform-logo-col">
+          <img src="assets/images/logo-emblem.png" alt="Pakubuwono Edotel" class="resform-logo-img">
+          <div class="resform-hotel-brand">PAKUBUWONO</div>
+          <div class="resform-hotel-sub">EDOTEL</div>
+          <div class="resform-hotel-school">SMKN 30 JAKARTA</div>
         </div>
-        <div style="text-align: center;">
-          <h2 style="font-family: 'Times New Roman', Georgia, serif; font-size: 1.5rem; font-weight: 400; letter-spacing: 1px; margin: 0; color: #000;">RESERVATION FORM</h2>
+        <div class="resform-title-col">
+          <h2 class="resform-title-text">RESERVATION FORM</h2>
         </div>
-        <div style="text-align: right; align-self: end; font-size: 0.92rem;">
+        <div class="resform-no-col">
           <span>Reservation No. : </span>
-          <span style="${dottedLineStyle} min-width: 110px; text-align: center; font-family: monospace; font-size: 0.92rem;">${b.booking_code}</span>
+          <span class="resform-dotted-line resform-no-val">${b.booking_code}</span>
         </div>
       </div>
 
-      <!-- 2. THREE STATUS BOXES -->
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin: 14px 0 24px; padding: 0 6px;">
+      <!-- 2. THREE STATUS BOXES: NEW BOOKING | AMANDEMENT | CANCELLATION -->
+      <div class="resform-status-container">
         ${['New Booking', 'Amandement', 'Cancellation'].map(st => {
           const isChecked = activeStatus === st;
           return `
-            <div style="text-align: center; cursor: pointer; user-select: none;" onclick="toggleAdminResFormBox('status', '${st}')" title="Klik untuk memilih status ${st}">
-              <div style="width: 124px; height: 32px; border: 1.5px solid #000; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 800; color: #0f172a; background: ${isChecked ? 'rgba(197, 160, 89, 0.14)' : '#fff'};">
+            <div class="resform-status-item" onclick="toggleAdminResFormBox('status', '${st}')" title="Klik untuk memilih status ${st}">
+              <div class="resform-status-box ${isChecked ? 'active' : ''}">
                 ${isChecked ? '&#10003;' : ''}
               </div>
-              <div style="font-size: 0.92rem; margin-top: 4px; color: #000;">${st}</div>
+              <div class="resform-status-label">${st}</div>
             </div>
           `;
         }).join('')}
       </div>
 
       <!-- 3. GUEST NAME, PAX, ARRIVAL & DEPARTURE -->
-      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
-        <div style="display: flex; align-items: baseline;">
-          <span style="width: 145px; flex-shrink: 0;">Name of Guest</span>
-          <span style="margin-right: 6px;">:</span>
-          <span style="${dottedLineStyle} flex: 1;">${b.guest_name} (Room #${b.room_number} - Floor ${b.floor})</span>
+      <div class="resform-details-section">
+        <div class="resform-field-row">
+          <span class="resform-field-label">Name of Guest</span>
+          <span class="resform-field-colon">:</span>
+          <span class="resform-dotted-line resform-field-val">${b.guest_name} (Room #${b.room_number} - Floor ${b.floor})</span>
         </div>
 
-        <div style="display: flex; align-items: baseline;">
-          <span style="width: 145px; flex-shrink: 0;">Number of Person</span>
-          <span style="margin-right: 6px;">:</span>
-          <span style="${dottedLineStyle} width: 90px; text-align: center;">${b.guest_count || 2} Adult</span>
-          <span style="margin: 0 4px; font-weight: 700;">/</span>
-          <span style="${dottedLineStyle} width: 120px; text-align: center;">0 Child (${b.total_nights} Night${b.total_nights > 1 ? 's' : ''})</span>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1.2fr 1fr 0.9fr; gap: 12px; align-items: baseline; margin-top: 6px;">
-          <div style="display: flex; align-items: baseline;">
-            <span style="width: 90px; flex-shrink: 0;">Arrival</span>
-            <span style="margin-right: 6px;">:</span>
-            <span style="${dottedLineStyle} flex: 1; text-align: center;">${b.check_in_date}</span>
-          </div>
-          <div style="display: flex; align-items: baseline;">
-            <span style="width: 78px; flex-shrink: 0;">Flight No.</span>
-            <span style="margin-right: 6px;">:</span>
-            <span style="${dottedLineStyle} flex: 1; text-align: center;">${meta.arr_flight}</span>
-          </div>
-          <div style="display: flex; align-items: baseline;">
-            <span style="width: 48px; flex-shrink: 0;">ETA</span>
-            <span style="margin-right: 6px;">:</span>
-            <span style="${dottedLineStyle} flex: 1; text-align: center;">${meta.eta}</span>
+        <div class="resform-field-row">
+          <span class="resform-field-label">Number of Person</span>
+          <span class="resform-field-colon">:</span>
+          <div class="resform-pax-wrap">
+            <span class="resform-dotted-line resform-pax-val">${b.guest_count || 2} Adult</span>
+            <span class="resform-slash">/</span>
+            <span class="resform-dotted-line resform-pax-val">0 Child (${b.total_nights} Night${b.total_nights > 1 ? 's' : ''})</span>
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1.2fr 1fr 0.9fr; gap: 12px; align-items: baseline;">
-          <div style="display: flex; align-items: baseline;">
-            <span style="width: 90px; flex-shrink: 0;">Departure</span>
-            <span style="margin-right: 6px;">:</span>
-            <span style="${dottedLineStyle} flex: 1; text-align: center;">${b.check_out_date}</span>
+        <div class="resform-flights-row">
+          <div class="resform-flight-item">
+            <span class="resform-flight-label">Arrival</span>
+            <span class="resform-field-colon">:</span>
+            <span class="resform-dotted-line resform-field-val resform-center">${b.check_in_date}</span>
           </div>
-          <div style="display: flex; align-items: baseline;">
-            <span style="width: 78px; flex-shrink: 0;">Flight No.</span>
-            <span style="margin-right: 6px;">:</span>
-            <span style="${dottedLineStyle} flex: 1; text-align: center;">${meta.dep_flight}</span>
+          <div class="resform-flight-item">
+            <span class="resform-flight-label">Flight No.</span>
+            <span class="resform-field-colon">:</span>
+            <span class="resform-dotted-line resform-field-val resform-center">${meta.arr_flight}</span>
           </div>
-          <div style="display: flex; align-items: baseline;">
-            <span style="width: 48px; flex-shrink: 0;">ETD</span>
-            <span style="margin-right: 6px;">:</span>
-            <span style="${dottedLineStyle} flex: 1; text-align: center;">${meta.etd}</span>
+          <div class="resform-flight-item resform-flight-eta">
+            <span class="resform-flight-label">ETA</span>
+            <span class="resform-field-colon">:</span>
+            <span class="resform-dotted-line resform-field-val resform-center">${meta.eta}</span>
+          </div>
+        </div>
+
+        <div class="resform-flights-row">
+          <div class="resform-flight-item">
+            <span class="resform-flight-label">Departure</span>
+            <span class="resform-field-colon">:</span>
+            <span class="resform-dotted-line resform-field-val resform-center">${b.check_out_date}</span>
+          </div>
+          <div class="resform-flight-item">
+            <span class="resform-flight-label">Flight No.</span>
+            <span class="resform-field-colon">:</span>
+            <span class="resform-dotted-line resform-field-val resform-center">${meta.dep_flight}</span>
+          </div>
+          <div class="resform-flight-item resform-flight-eta">
+            <span class="resform-flight-label">ETD</span>
+            <span class="resform-field-colon">:</span>
+            <span class="resform-dotted-line resform-field-val resform-center">${meta.etd}</span>
           </div>
         </div>
       </div>
 
-      <!-- 4. TWO TABLES: RESERVATION BY & TYPE OF ROOM -->
-      <div style="display: grid; grid-template-columns: 185px 1fr; gap: 24px; margin-bottom: 22px; align-items: start;">
-        <table style="width: 100%; border-collapse: collapse; border: 1.2px solid #000; font-size: 0.88rem;">
+      <!-- 4. TWO TABLES: RESERVATION BY & TYPE OF ROOM / BED TYPE / RATE -->
+      <div class="resform-tables-wrapper">
+        <!-- Left Table: Reservation by -->
+        <table class="resform-table-by">
           <thead>
             <tr>
-              <th colspan="2" style="border: 1px solid #000; padding: 4px 8px; text-align: center; font-weight: 600;">Reservation by</th>
+              <th colspan="2">Reservation by</th>
             </tr>
           </thead>
           <tbody>
             ${resByOptions.map(opt => {
               const isChecked = activeResBy.toLowerCase() === opt.toLowerCase();
               return `
-                <tr style="cursor: pointer;" onclick="toggleAdminResFormBox('resBy', '${opt}')" title="Klik untuk memilih ${opt}">
-                  <td style="border: 1px solid #000; padding: 3px 8px; text-align: center; width: 76%;">${opt}</td>
-                  <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: 800; background: ${isChecked ? 'rgba(197, 160, 89, 0.16)' : '#fff'};">${isChecked ? '&#10003;' : ''}</td>
+                <tr onclick="toggleAdminResFormBox('resBy', '${opt}')" title="Klik untuk memilih ${opt}">
+                  <td class="resform-td-opt">${opt}</td>
+                  <td class="resform-td-check ${isChecked ? 'active' : ''}">${isChecked ? '&#10003;' : ''}</td>
                 </tr>
               `;
             }).join('')}
           </tbody>
         </table>
 
-        <table style="width: 100%; border-collapse: collapse; border: 1.2px solid #000; font-size: 0.88rem;">
-          <thead>
-            <tr>
-              <th colspan="2" style="border: 1px solid #000; padding: 4px 8px; text-align: center; font-weight: 600;">Type of Room</th>
-              <th style="border: 1px solid #000; padding: 4px 8px; text-align: center; font-weight: 600; width: 92px;">Bed Type</th>
-              <th style="border: 1px solid #000; padding: 4px 8px; text-align: center; font-weight: 600;">Rate</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${roomRows.map(r => {
-              const isSelectedRoom = (b.room_type_name || '').toLowerCase() === r.matchKey.toLowerCase();
-              const bedDisplay = isSelectedRoom
-                ? `<span style="cursor:pointer;" onclick="toggleAdminResFormBox('bed', '${activeBed === 'TW' ? 'KS' : 'TW'}')" title="Klik untuk ganti TW/KS">
-                     <strong style="${activeBed === 'TW' ? 'border: 1.5px solid #000; border-radius: 10px; padding: 0 4px; background: rgba(197,160,89,0.2);' : 'color: #64748b;'}">TW</strong>/<strong style="${activeBed === 'KS' ? 'border: 1.5px solid #000; border-radius: 10px; padding: 0 4px; background: rgba(197,160,89,0.2);' : 'color: #64748b;'}">KS</strong>
-                   </span>`
-                : 'TW/KS';
+        <!-- Right Table: Type of Room | Check | Bed Type | Rate -->
+        <div class="resform-table-room-scroll">
+          <table class="resform-table-room">
+            <thead>
+              <tr>
+                <th colspan="2">Type of Room</th>
+                <th class="resform-th-bed">Bed Type</th>
+                <th>Rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${roomRows.map(r => {
+                const isSelectedRoom = (b.room_type_name || '').toLowerCase() === r.matchKey.toLowerCase();
+                const bedDisplay = isSelectedRoom
+                  ? `<span class="resform-bed-toggle" onclick="toggleAdminResFormBox('bed', '${activeBed === 'TW' ? 'KS' : 'TW'}')" title="Klik untuk ganti TW/KS">
+                       <strong class="${activeBed === 'TW' ? 'bed-active' : 'bed-inactive'}">TW</strong>/<strong class="${activeBed === 'KS' ? 'bed-active' : 'bed-inactive'}">KS</strong>
+                     </span>`
+                  : 'TW/KS';
 
-              const rateDisplay = isSelectedRoom
-                ? `<strong>Rp ${r.rateIdr.toLocaleString('id-ID')} ($${r.rateUsd}) / night</strong>`
-                : `<span style="color: #64748b; font-size: 0.8rem;">Rp ${r.rateIdr.toLocaleString('id-ID')} ($${r.rateUsd})</span>`;
+                const rateDisplay = isSelectedRoom
+                  ? `<strong>Rp ${r.rateIdr.toLocaleString('id-ID')} ($${r.rateUsd}) / night</strong>`
+                  : `<span class="rate-muted">Rp ${r.rateIdr.toLocaleString('id-ID')} ($${r.rateUsd})</span>`;
 
-              return `
-                <tr style="background: ${isSelectedRoom ? 'rgba(197, 160, 89, 0.14)' : '#fff'};">
-                  <td style="border: 1px solid #000; padding: 3px 10px; text-align: center; width: 34%; font-weight: ${isSelectedRoom ? '700' : '400'};">${r.label}</td>
-                  <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; width: 36px; font-weight: 800;">${isSelectedRoom ? '&#10003;' : ''}</td>
-                  <td style="border: 1px solid #000; padding: 3px 6px; text-align: center;">${bedDisplay}</td>
-                  <td style="border: 1px solid #000; padding: 3px 10px; text-align: center;">${rateDisplay}</td>
-                </tr>
-              `;
-            }).join('')}
-          </tbody>
-        </table>
-      </div>
-
-      <!-- 5. COMPANY, ADDRESS, EMAIL, PHONE, REMARKS & BILLING -->
-      <div style="display: flex; flex-direction: column; gap: 9px; margin-bottom: 24px;">
-        <div style="display: flex; align-items: baseline;">
-          <span style="width: 145px; flex-shrink: 0;">Company Name</span>
-          <span style="margin-right: 6px;">:</span>
-          <span style="${dottedLineStyle} flex: 1;">${meta.company}</span>
-        </div>
-
-        <div style="display: flex; align-items: baseline;">
-          <span style="width: 145px; flex-shrink: 0;">Address</span>
-          <span style="margin-right: 6px;">:</span>
-          <span style="${dottedLineStyle} flex: 1;">${meta.address}</span>
-        </div>
-
-        <div style="display: flex; align-items: baseline;">
-          <span style="width: 145px; flex-shrink: 0;"></span>
-          <span style="margin-right: 6px; visibility: hidden;">:</span>
-          <span style="${dottedLineStyle} flex: 1;">&nbsp;</span>
-        </div>
-
-        <div style="display: flex; align-items: baseline;">
-          <span style="width: 145px; flex-shrink: 0;">Email</span>
-          <span style="margin-right: 6px;">:</span>
-          <span style="${dottedLineStyle} flex: 1;">${b.guest_email}</span>
-        </div>
-
-        <div style="display: flex; align-items: baseline;">
-          <span style="width: 145px; flex-shrink: 0;">Phone Number</span>
-          <span style="margin-right: 6px;">:</span>
-          <span style="${dottedLineStyle} flex: 1;">${b.guest_phone || '-'}</span>
-        </div>
-
-        <div style="display: flex; align-items: baseline;">
-          <span style="width: 145px; flex-shrink: 0;">Remarks</span>
-          <span style="margin-right: 6px;">:</span>
-          <span style="${dottedLineStyle} flex: 1;">${meta.remarks}</span>
-        </div>
-
-        <div style="display: flex; align-items: baseline;">
-          <span style="width: 145px; flex-shrink: 0;">Billing Instruction</span>
-          <span style="margin-right: 6px;">:</span>
-          <span style="${dottedLineStyle} flex: 1;">${meta.billing} — Total (Inc. 12% Tax): Rp ${Number(p.total_price).toLocaleString('id-ID')} (${b.payment_status === 'paid' ? 'PAID' : 'UNPAID'})</span>
+                return `
+                  <tr class="${isSelectedRoom ? 'room-selected' : ''}">
+                    <td class="resform-td-room-name">${r.label}</td>
+                    <td class="resform-td-room-check">${isSelectedRoom ? '&#10003;' : ''}</td>
+                    <td class="resform-td-room-bed">${bedDisplay}</td>
+                    <td class="resform-td-room-rate">${rateDisplay}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <!-- 6. FOOTER SIGN-OFF -->
-      <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px; padding-top: 6px;">
-        <div style="display: grid; grid-template-columns: 1.25fr 1fr; gap: 24px; align-items: baseline;">
-          <div style="display: flex; align-items: baseline;">
-            <span style="width: 135px; flex-shrink: 0;">Accepted by</span>
-            <span style="margin-right: 6px;">:</span>
-            <span style="${dottedLineStyle} flex: 1; text-align: center;">${meta.accepted_by}</span>
+      <!-- 5. COMPANY, ADDRESS, EMAIL, PHONE, REMARKS & BILLING INSTRUCTION -->
+      <div class="resform-company-section">
+        <div class="resform-field-row">
+          <span class="resform-field-label">Company Name</span>
+          <span class="resform-field-colon">:</span>
+          <span class="resform-dotted-line resform-field-val">${meta.company}</span>
+        </div>
+
+        <div class="resform-field-row">
+          <span class="resform-field-label">Address</span>
+          <span class="resform-field-colon">:</span>
+          <span class="resform-dotted-line resform-field-val">${meta.address}</span>
+        </div>
+
+        <div class="resform-field-row">
+          <span class="resform-field-label">Email</span>
+          <span class="resform-field-colon">:</span>
+          <span class="resform-dotted-line resform-field-val">${b.guest_email}</span>
+        </div>
+
+        <div class="resform-field-row">
+          <span class="resform-field-label">Phone Number</span>
+          <span class="resform-field-colon">:</span>
+          <span class="resform-dotted-line resform-field-val">${b.guest_phone || '-'}</span>
+        </div>
+
+        <div class="resform-field-row">
+          <span class="resform-field-label">Remarks</span>
+          <span class="resform-field-colon">:</span>
+          <span class="resform-dotted-line resform-field-val">${meta.remarks}</span>
+        </div>
+
+        <div class="resform-field-row">
+          <span class="resform-field-label">Billing Instruction</span>
+          <span class="resform-field-colon">:</span>
+          <span class="resform-dotted-line resform-field-val">${meta.billing} — Total (Inc. 12% Tax): Rp ${Number(p.total_price).toLocaleString('id-ID')} (${b.payment_status === 'paid' ? 'PAID' : 'UNPAID'})</span>
+        </div>
+      </div>
+
+      <!-- 6. FOOTER SIGN-OFF: ACCEPTED BY & CONFIRMATION BY -->
+      <div class="resform-sign-wrapper">
+        <div class="resform-sign-row">
+          <div class="resform-sign-item">
+            <span class="resform-sign-label">Accepted by</span>
+            <span class="resform-field-colon">:</span>
+            <span class="resform-dotted-line resform-field-val resform-center">${meta.accepted_by}</span>
           </div>
-          <div style="display: flex; align-items: baseline;">
-            <span style="width: 55px; flex-shrink: 0;">Date</span>
-            <span style="margin-right: 6px;">:</span>
-            <span style="${dottedLineStyle} flex: 1; text-align: center;">${meta.accepted_date}</span>
+          <div class="resform-sign-item resform-sign-date">
+            <span class="resform-sign-label">Date</span>
+            <span class="resform-field-colon">:</span>
+            <span class="resform-dotted-line resform-field-val resform-center">${meta.accepted_date}</span>
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1.25fr 1fr; gap: 24px; align-items: baseline;">
-          <div style="display: flex; align-items: baseline;">
-            <span style="width: 135px; flex-shrink: 0;">Confirmation by</span>
-            <span style="margin-right: 6px;">:</span>
-            <span style="${dottedLineStyle} flex: 1; text-align: center;">${meta.confirmed_by || '&nbsp;'}</span>
+        <div class="resform-sign-row">
+          <div class="resform-sign-item">
+            <span class="resform-sign-label">Confirmation by</span>
+            <span class="resform-field-colon">:</span>
+            <span class="resform-dotted-line resform-field-val resform-center">${meta.confirmed_by || '&nbsp;'}</span>
           </div>
-          <div style="display: flex; align-items: baseline;">
-            <span style="width: 55px; flex-shrink: 0;">Date</span>
-            <span style="margin-right: 6px;">:</span>
-            <span style="${dottedLineStyle} flex: 1; text-align: center;">${meta.confirmed_date || '&nbsp;'}</span>
+          <div class="resform-sign-item resform-sign-date">
+            <span class="resform-sign-label">Date</span>
+            <span class="resform-field-colon">:</span>
+            <span class="resform-dotted-line resform-field-val resform-center">${meta.confirmed_date || '&nbsp;'}</span>
           </div>
         </div>
       </div>

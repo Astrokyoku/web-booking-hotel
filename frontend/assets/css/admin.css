@@ -939,6 +939,429 @@ body {
   }
 }
 
+/* ============================================================
+   OFFICIAL RESERVATION FORM STYLES (Admin Portal)
+   ============================================================ */
+.official-resform-sheet {
+  font-family: 'Times New Roman', Georgia, serif;
+  color: #000000;
+  background: #ffffff;
+  padding: 10px 14px;
+  line-height: 1.45;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+  width: 100%;
+}
+.resform-header {
+  display: grid;
+  grid-template-columns: 190px 1fr 220px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.resform-logo-col {
+  text-align: center;
+}
+.resform-logo-img {
+  height: 46px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 2px;
+}
+.resform-hotel-brand {
+  font-family: 'Playfair Display', 'Times New Roman', serif;
+  font-weight: 800;
+  font-size: 1.02rem;
+  letter-spacing: 1.5px;
+  color: #b89146;
+  line-height: 1.1;
+}
+.resform-hotel-sub {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #b89146;
+  line-height: 1.15;
+}
+.resform-hotel-school {
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: #b89146;
+}
+.resform-title-col {
+  text-align: center;
+}
+.resform-title-text {
+  font-family: 'Times New Roman', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  letter-spacing: 1px;
+  margin: 0;
+  color: #000;
+}
+.resform-no-col {
+  text-align: right;
+  align-self: end;
+  font-size: 0.92rem;
+}
+.resform-dotted-line {
+  border-bottom: 1.5px dotted #1e293b;
+  display: inline-block;
+  padding: 0 6px 1px;
+  font-weight: 600;
+  color: #0f172a;
+  min-height: 20px;
+  box-sizing: border-box;
+}
+.resform-no-val {
+  min-width: 110px;
+  text-align: center;
+  font-family: monospace;
+  font-size: 0.92rem;
+}
+.resform-status-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin: 14px 0 24px;
+  padding: 0 6px;
+}
+.resform-status-item {
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+}
+.resform-status-box {
+  width: 124px;
+  height: 32px;
+  border: 1.5px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #0f172a;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+.resform-status-box.active {
+  background: rgba(197, 160, 89, 0.18);
+}
+.resform-status-label {
+  font-size: 0.92rem;
+  margin-top: 4px;
+  color: #000;
+}
+.resform-details-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.resform-field-row {
+  display: flex;
+  align-items: baseline;
+}
+.resform-field-label {
+  width: 145px;
+  flex-shrink: 0;
+}
+.resform-field-colon {
+  margin-right: 6px;
+}
+.resform-field-val {
+  flex: 1;
+}
+.resform-center {
+  text-align: center;
+}
+.resform-pax-wrap {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.resform-pax-val {
+  text-align: center;
+}
+.resform-slash {
+  font-weight: 700;
+}
+.resform-flights-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 0.9fr;
+  gap: 12px;
+  align-items: baseline;
+  margin-top: 4px;
+}
+.resform-flight-item {
+  display: flex;
+  align-items: baseline;
+}
+.resform-flight-label {
+  width: 78px;
+  flex-shrink: 0;
+}
+.resform-flight-item:first-child .resform-flight-label {
+  width: 90px;
+}
+.resform-flight-eta .resform-flight-label {
+  width: 48px;
+}
+.resform-tables-wrapper {
+  display: grid;
+  grid-template-columns: 185px 1fr;
+  gap: 24px;
+  margin-bottom: 22px;
+  align-items: start;
+}
+.resform-table-by {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1.2px solid #000;
+  font-size: 0.88rem;
+}
+.resform-table-by th,
+.resform-table-by td {
+  border: 1px solid #000;
+  padding: 3px 8px;
+  text-align: center;
+}
+.resform-td-opt {
+  width: 76%;
+}
+.resform-td-check.active {
+  background: rgba(197, 160, 89, 0.16);
+  font-weight: 800;
+}
+.resform-table-room-scroll {
+  width: 100%;
+}
+.resform-table-room {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1.2px solid #000;
+  font-size: 0.88rem;
+}
+.resform-table-room th,
+.resform-table-room td {
+  border: 1px solid #000;
+  padding: 3px 8px;
+  text-align: center;
+}
+.resform-th-bed {
+  width: 92px;
+}
+.resform-td-room-name {
+  width: 34%;
+}
+.resform-td-room-check {
+  width: 36px;
+  font-weight: 800;
+}
+.room-selected {
+  background: rgba(197, 160, 89, 0.14);
+}
+.room-selected .resform-td-room-name {
+  font-weight: 700;
+}
+.bed-active {
+  border: 1.5px solid #000;
+  border-radius: 10px;
+  padding: 0 4px;
+  background: rgba(197, 160, 89, 0.2);
+}
+.bed-inactive {
+  color: #64748b;
+}
+.rate-muted {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+.resform-company-section {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-bottom: 24px;
+}
+.resform-sign-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 6px;
+}
+.resform-sign-row {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 24px;
+  align-items: baseline;
+}
+.resform-sign-item {
+  display: flex;
+  align-items: baseline;
+}
+.resform-sign-label {
+  width: 135px;
+  flex-shrink: 0;
+}
+.resform-sign-date .resform-sign-label {
+  width: 55px;
+}
+
+/* Screen Mobile Responsive Overrides for Admin Reservation Form */
+@media screen and (max-width: 768px) {
+  #adminResFormPrintArea {
+    padding: 14px 10px !important;
+    border-width: 1px !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .official-resform-sheet {
+    padding: 10px 8px !important;
+    font-size: 0.85rem !important;
+    overflow-x: hidden !important;
+  }
+  .resform-header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 8px !important;
+    text-align: center !important;
+    margin-bottom: 12px !important;
+  }
+  .resform-logo-col { order: 1 !important; }
+  .resform-title-col { order: 2 !important; }
+  .resform-title-text {
+    font-size: 1.25rem !important;
+    letter-spacing: 0.5px !important;
+  }
+  .resform-no-col {
+    order: 3 !important;
+    align-self: center !important;
+    text-align: center !important;
+    font-size: 0.85rem !important;
+  }
+  .resform-status-container {
+    display: flex !important;
+    gap: 6px !important;
+    justify-content: space-between !important;
+    margin: 8px 0 14px !important;
+    padding: 0 !important;
+  }
+  .resform-status-item {
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+  .resform-status-box {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 28px !important;
+    font-size: 1rem !important;
+  }
+  .resform-status-label {
+    font-size: 0.72rem !important;
+    margin-top: 3px !important;
+    word-break: break-word !important;
+  }
+  .resform-details-section {
+    gap: 8px !important;
+    margin-bottom: 14px !important;
+  }
+  .resform-field-row {
+    flex-wrap: wrap !important;
+    gap: 2px !important;
+  }
+  .resform-field-label {
+    width: 100% !important;
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    color: #334155 !important;
+  }
+  .resform-field-colon {
+    display: none !important;
+  }
+  .resform-field-val {
+    width: 100% !important;
+    flex: none !important;
+    font-size: 0.85rem !important;
+    min-height: 22px !important;
+  }
+  .resform-pax-wrap {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+    width: 100% !important;
+  }
+  .resform-pax-val {
+    flex: 1 !important;
+  }
+  .resform-flights-row {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+    margin-top: 4px !important;
+  }
+  .resform-flight-item {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 2px !important;
+  }
+  .resform-flight-label {
+    width: 100% !important;
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    color: #334155 !important;
+  }
+  .resform-tables-wrapper {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    margin-bottom: 16px !important;
+  }
+  .resform-table-by {
+    width: 100% !important;
+    font-size: 0.82rem !important;
+  }
+  .resform-table-room-scroll {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+  }
+  .resform-table-room {
+    min-width: 440px !important;
+    font-size: 0.82rem !important;
+  }
+  .resform-company-section {
+    gap: 8px !important;
+    margin-bottom: 16px !important;
+  }
+  .resform-sign-wrapper {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    margin-top: 10px !important;
+  }
+  .resform-sign-row {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+  }
+  .resform-sign-item {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 2px !important;
+  }
+  .resform-sign-label {
+    width: 100% !important;
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    color: #334155 !important;
+  }
+}
+
 /* Print Styles for Official Reservation Form in Admin Portal */
 @page {
   size: A4 portrait;

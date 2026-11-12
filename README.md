@@ -1,6 +1,6 @@
 # 🏨 PAKUBUWONO EDHOTEL — SMKN 30 Jakarta (Web Booking & Front Office System)
 
-<div align="center">
+<div alignt="center">
   <img src="frontend/assets/images/logo-pakubuwono.png" alt="Logo Pakubuwono Edhotel SMKN 30 Jakarta" width="220" style="margin-bottom: 16px;">
 
   **Sistem Informasi Reservasi Hotel, Restoran, MICE & Front Office Berbasis Web App dan RESTful API.**  

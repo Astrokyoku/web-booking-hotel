@@ -643,7 +643,7 @@
       </div>
       <div class="modal-body">
         <!-- Tab Switcher: E-Voucher vs Official Reservation Form -->
-        <div style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
+        <div class="voucher-tab-switcher" style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
           <button type="button" class="btn btn-gold btn-sm" id="tabBtnEvoucher" onclick="switchVoucherView('evoucher')" style="flex: 1;">
             <i class="fa-solid fa-receipt"></i> E-Voucher Digital
           </button>
@@ -652,7 +652,7 @@
           </button>
         </div>
 
-        <div id="voucherPrintArea" class="printable-voucher" style="background: #ffffff; color: #0f172a; padding: 28px; border-radius: var(--radius-sm); border: 2px solid #c5a059;">
+        <div id="voucherPrintArea" class="printable-voucher">
           <!-- Populated by JS -->
         </div>
         <div style="display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;" id="voucherActionButtons">
@@ -676,7 +676,7 @@
         <button class="modal-close" onclick="closeModal('restaurantVoucherModal')">&times;</button>
       </div>
       <div class="modal-body">
-        <div id="restVoucherPrintArea" class="printable-voucher" style="background: #ffffff; color: #0f172a; padding: 28px; border-radius: var(--radius-sm); border: 2px solid #c5a059;">
+        <div id="restVoucherPrintArea" class="printable-voucher">
           <!-- Populated by JS -->
         </div>
         <div style="display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;">
@@ -697,7 +697,7 @@
         <button class="modal-close" onclick="closeModal('venueVoucherModal')">&times;</button>
       </div>
       <div class="modal-body">
-        <div id="venueVoucherPrintArea" class="printable-voucher" style="background: #ffffff; color: #0f172a; padding: 28px; border-radius: var(--radius-sm); border: 2px solid #c5a059;">
+        <div id="venueVoucherPrintArea" class="printable-voucher">
           <!-- Populated by JS -->
         </div>
         <div style="display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;">
